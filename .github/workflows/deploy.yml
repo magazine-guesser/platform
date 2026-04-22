@@ -36,7 +36,7 @@ jobs:
       - name: configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::464108382357:role/CdkStack-GithubOicdCdkRoleF651F379-wh2dDoJP6Xot
+          role-to-assume: arn:aws:iam::464108382357:role/InfraStack-GithubOicdCdkRoleF651F379-X3fVSWwHNdbf
           aws-region: eu-central-1
       
       - name: deploy

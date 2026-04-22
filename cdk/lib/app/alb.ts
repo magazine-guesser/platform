@@ -1,5 +1,4 @@
 import { Construct } from 'constructs';
-import * as cdk from 'aws-cdk-lib/core';
 import { aws_elasticloadbalancingv2 as elbv2, aws_ec2 as ec2, aws_ecs as ecs, Duration } from 'aws-cdk-lib'
 
 interface AlbProps {

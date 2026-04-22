@@ -28,8 +28,7 @@ export class EcsConstruct extends Construct {
         });
 
         this.sg = new ec2.SecurityGroup(this, 'TaskSg', { vpc: props.vpc });
-        this.sg.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(3000)); //TODO: restrict once ALB is set up
-
+        
         this.service = new ecs.FargateService(this, 'Service', {
             cluster,
             taskDefinition: taskDef,

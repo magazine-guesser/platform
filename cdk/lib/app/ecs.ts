@@ -37,7 +37,5 @@ export class EcsConstruct extends Construct {
             securityGroups: [this.sg],
             assignPublicIp: true
         });
-
-
     }
 }

@@ -18,11 +18,6 @@ export class AppStack extends cdk.Stack {
 
         const ecsConst = new EcsConstruct(this, 'EcsConstruct', { vpc });
 
-        const alb = new elbv2.ApplicationLoadBalancer(this, 'Alb', {
-            vpc,
-            internetFacing: true
-        });
-
         Aspects.of(this).add(new DestroyAll());
     }
 }

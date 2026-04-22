@@ -1,6 +1,8 @@
 import * as cdk from 'aws-cdk-lib/core';
 import { Construct } from 'constructs';
-import { aws_dynamodb as dynamodb } from 'aws-cdk-lib';
+import { aws_dynamodb as dynamodb, aws_ec2 as ec2, Aspects} from 'aws-cdk-lib';
+import { DestroyAll } from './app/aspects';
+import { EcsConstruct } from './app/ecs'
 
 export class AppStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -10,8 +12,17 @@ export class AppStack extends cdk.Stack {
             partitionKey: { name: 'date', type: dynamodb.AttributeType.STRING },
             sortKey: { name: 'nr', type: dynamodb.AttributeType.NUMBER },
             billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-            removalPolicy: cdk.RemovalPolicy.DESTROY
         });
 
+        const vpc = ec2.Vpc.fromLookup(this, 'Vpc', { isDefault: true });
+
+        const ecsConst = new EcsConstruct(this, 'EcsConstruct', { vpc });
+
+        const alb = new elbv2.ApplicationLoadBalancer(this, 'Alb', {
+            vpc,
+            internetFacing: true
+        });
+
+        Aspects.of(this).add(new DestroyAll());
     }
 }

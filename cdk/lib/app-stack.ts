@@ -5,8 +5,12 @@ import { DestroyAll } from './app/aspects';
 import { EcsConstruct } from './app/ecs'
 import { AlbConstruct } from './app/alb';
 
+interface AppStackProps extends cdk.StackProps {
+    vpc?: ec2.IVpc
+}
+
 export class AppStack extends cdk.Stack {
-    constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+    constructor(scope: Construct, id: string, props?: AppStackProps) {
         super(scope, id, props);
 
         const dailyTable = new dynamodb.Table(this, 'DailySelection', {
@@ -15,7 +19,7 @@ export class AppStack extends cdk.Stack {
             billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
         });
 
-        const vpc = ec2.Vpc.fromLookup(this, 'Vpc', { isDefault: true });
+        const vpc = props?.vpc ? props.vpc : ec2.Vpc.fromLookup(this, 'Vpc', { isDefault: true });
 
         const ecsConst = new EcsConstruct(this, 'EcsConstruct', { vpc });
         const albConst = new AlbConstruct(this, 'AlbConstruct', {

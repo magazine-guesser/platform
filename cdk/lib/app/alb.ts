@@ -24,6 +24,7 @@ export class AlbConstruct extends Construct {
 
         listener.addTargets('EcsTargets', {
             port: 3000,
+            protocol: elbv2.ApplicationProtocol.HTTP,
             targets: [props.service],
             healthCheck: {
                 path: '/health',

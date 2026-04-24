@@ -1,18 +1,22 @@
 import { Construct } from 'constructs';
 import { aws_iam as iam } from 'aws-cdk-lib';
 import { Repository } from 'aws-cdk-lib/aws-ecr';
+import { Bucket } from 'aws-cdk-lib/aws-s3'
 
 interface GithubOidcProps {
     ecrRepo: Repository;
     orgName: string,
     cdkRepoName: string;
     backendRepoName: string;
+    frontendBucket: Bucket
+    frontendRepoName: string;
 }
 
 export class GithubOidc extends Construct {
 
     public readonly cdkRole: iam.Role;
     public readonly backendRole: iam.Role;
+    public readonly frontendRole: iam.Role;
 
     constructor(scope: Construct, id: string, props: GithubOidcProps) {
         super(scope, id);
@@ -29,6 +33,10 @@ export class GithubOidc extends Construct {
 
         this.backendRole = this.createRole('BackendRole', provider, props.orgName, props.backendRepoName);
         props.ecrRepo.grantPullPush(this.backendRole);
+
+        this.frontendRole = this.createRole('FrontendRole', provider, props.orgName, props.frontendRepoName);
+        props.frontendBucket.grantWrite(this.frontendRole); //TODO: cloudfront permission
+
     }
 
     private createRole(id: string, provider: iam.OpenIdConnectProvider, orgName: string, repoName: string) {

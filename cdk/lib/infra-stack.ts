@@ -1,7 +1,8 @@
 import * as cdk from 'aws-cdk-lib/core';
 import { Construct } from 'constructs';
-import { aws_ecr as ecr } from 'aws-cdk-lib';
+import { aws_ecr as ecr, aws_s3 as s3 } from 'aws-cdk-lib';
 import { GithubOidc } from './oidc';
+import { BlockPublicAccess } from 'aws-cdk-lib/aws-s3';
 
 export class InfraStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -17,11 +18,19 @@ export class InfraStack extends cdk.Stack {
             }]
         });
 
+        const frontendBucket = new s3.Bucket(this, 'FrontendBucket', {
+            blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
+            autoDeleteObjects: true,
+            removalPolicy: cdk.RemovalPolicy.DESTROY,
+        });
+
         const oicd = new GithubOidc(this, 'GithubOicd', {
             ecrRepo: containerRepo,
             orgName: 'magazine-guesser',
             cdkRepoName: 'platform',
-            backendRepoName: 'backend'
+            backendRepoName: 'backend',
+            frontendBucket,
+            frontendRepoName: 'frontend'
         })
 
     }

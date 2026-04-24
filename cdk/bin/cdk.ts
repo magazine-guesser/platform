@@ -2,6 +2,7 @@
 import * as cdk from 'aws-cdk-lib/core';
 import { AppStack } from '../lib/app-stack';
 import { InfraStack } from '../lib/infra-stack';
+import { aws_ec2 as ec2 } from 'aws-cdk-lib';
 
 const app = new cdk.App();
 

@@ -10,11 +10,15 @@ export class InfraStack extends cdk.Stack {
 
         const adminSecret = new sm.Secret(this, 'AdminSecret', {
             secretName: 'admin-key',
-            description: 'allows backend admin access through frontend'
+            description: 'allows backend admin access through frontend',
+            generateSecretString: {
+                excludePunctuation: true
+            }
         });
 
         const containerRepo = new ecr.Repository(this, 'BackendImages', {
             repositoryName: 'backend-images',
+            removalPolicy: cdk.RemovalPolicy.DESTROY,
             emptyOnDelete: true,
             lifecycleRules: [{
                 maxImageCount: 3,
@@ -23,6 +27,7 @@ export class InfraStack extends cdk.Stack {
         });
 
         const frontendBucket = new s3.Bucket(this, 'FrontendBucket', {
+            removalPolicy: cdk.RemovalPolicy.DESTROY,
             blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
             autoDeleteObjects: true,
         });

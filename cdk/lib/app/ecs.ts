@@ -26,7 +26,7 @@ export class EcsConstruct extends Construct {
             cpu: 256
         });
 
-        const adminSecret = sm.Secret.fromSecretNameV2(this, 'AdminSecret', 'mgzn/admin-key');
+        const adminSecret = sm.Secret.fromSecretNameV2(this, 'AdminSecret', 'admin-key');
         taskDef.addContainer('BackendContainer', {
             image: ecs.ContainerImage.fromEcrRepository(repo, 'latest'),
             portMappings: [{ containerPort: 3000 }],

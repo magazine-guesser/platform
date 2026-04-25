@@ -1,16 +1,20 @@
 import * as cdk from 'aws-cdk-lib/core';
 import { Construct } from 'constructs';
-import { aws_ecr as ecr, aws_s3 as s3 } from 'aws-cdk-lib';
+import { aws_ecr as ecr, aws_s3 as s3, aws_secretsmanager as sm, Aspects } from 'aws-cdk-lib';
 import { GithubOidc } from './oidc';
-import { BlockPublicAccess } from 'aws-cdk-lib/aws-s3';
+import { DestroyAll } from './aspects';
 
 export class InfraStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
         super(scope, id, props);
 
+        const adminSecret = new sm.Secret(this, 'AdminSecret', {
+            secretName: 'admin-key',
+            description: 'allows backend admin access through frontend'
+        });
+
         const containerRepo = new ecr.Repository(this, 'BackendImages', {
             repositoryName: 'backend-images',
-            removalPolicy: cdk.RemovalPolicy.DESTROY,
             emptyOnDelete: true,
             lifecycleRules: [{
                 maxImageCount: 3,
@@ -19,9 +23,8 @@ export class InfraStack extends cdk.Stack {
         });
 
         const frontendBucket = new s3.Bucket(this, 'FrontendBucket', {
-            blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
+            blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
             autoDeleteObjects: true,
-            removalPolicy: cdk.RemovalPolicy.DESTROY,
         });
 
         const oicd = new GithubOidc(this, 'GithubOicd', {
@@ -33,5 +36,6 @@ export class InfraStack extends cdk.Stack {
             frontendRepoName: 'frontend'
         })
 
+        Aspects.of(this).add(new DestroyAll());
     }
 }

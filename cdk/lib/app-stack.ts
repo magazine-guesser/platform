@@ -1,9 +1,13 @@
 import * as cdk from 'aws-cdk-lib/core';
 import { Construct } from 'constructs';
-import { aws_dynamodb as dynamodb, aws_ec2 as ec2, Aspects } from 'aws-cdk-lib';
 import { DestroyAll } from './aspects';
 import { EcsConstruct } from './app/ecs'
 import { AlbConstruct } from './app/alb';
+import { 
+    aws_dynamodb as dynamodb, 
+    aws_ec2 as ec2, 
+    Aspects 
+} from 'aws-cdk-lib';
 
 interface AppStackProps extends cdk.StackProps {
     vpc?: ec2.IVpc

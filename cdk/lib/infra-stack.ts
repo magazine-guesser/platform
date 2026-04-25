@@ -1,8 +1,13 @@
 import * as cdk from 'aws-cdk-lib/core';
 import { Construct } from 'constructs';
-import { aws_ecr as ecr, aws_s3 as s3, aws_secretsmanager as sm, Aspects } from 'aws-cdk-lib';
 import { GithubOidc } from './oidc';
 import { DestroyAll } from './aspects';
+import { 
+    aws_ecr as ecr, 
+    aws_s3 as s3, 
+    aws_secretsmanager as sm, 
+    Aspects 
+} from 'aws-cdk-lib';
 
 export class InfraStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {

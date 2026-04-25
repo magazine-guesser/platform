@@ -1,5 +1,10 @@
 import { Construct } from 'constructs';
-import { aws_ecs as ecs, aws_ec2 as ec2, aws_ecr as ecr } from 'aws-cdk-lib'
+import { 
+    aws_ecs as ecs, 
+    aws_ec2 as ec2, 
+    aws_ecr as ecr, 
+    aws_secretsmanager as sm 
+} from 'aws-cdk-lib'
 
 interface EcsProps {
     vpc: ec2.IVpc,
@@ -21,14 +26,18 @@ export class EcsConstruct extends Construct {
             cpu: 256
         });
 
+        const adminSecret = sm.Secret.fromSecretNameV2(this, 'AdminSecret', 'mgzn/admin-key');
         taskDef.addContainer('BackendContainer', {
             image: ecs.ContainerImage.fromEcrRepository(repo, 'latest'),
             portMappings: [{ containerPort: 3000 }],
-            logging: ecs.LogDrivers.awsLogs({ streamPrefix: 'backend' })
+            logging: ecs.LogDrivers.awsLogs({ streamPrefix: 'backend' }),
+            secrets: {
+                ADMIN_KEY: ecs.Secret.fromSecretsManager(adminSecret)
+            }
         });
 
         this.sg = new ec2.SecurityGroup(this, 'TaskSg', { vpc: props.vpc });
-        
+
         this.service = new ecs.FargateService(this, 'Service', {
             cluster,
             taskDefinition: taskDef,

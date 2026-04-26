@@ -5,7 +5,8 @@ import { DestroyAll } from './aspects';
 import { 
     aws_ecr as ecr, 
     aws_s3 as s3, 
-    aws_secretsmanager as sm, 
+    aws_secretsmanager as sm,
+    aws_dynamodb as dynamodb, 
     Aspects 
 } from 'aws-cdk-lib';
 
@@ -20,6 +21,13 @@ export class InfraStack extends cdk.Stack {
                 excludePunctuation: true
             }
         });
+
+        const dailyTable = new dynamodb.Table(this, 'DailySelection', {
+            partitionKey: { name: 'date', type: dynamodb.AttributeType.STRING },
+            sortKey: { name: 'nr', type: dynamodb.AttributeType.NUMBER },
+            billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+        });
+
 
         const containerRepo = new ecr.Repository(this, 'BackendImages', {
             repositoryName: 'backend-images',

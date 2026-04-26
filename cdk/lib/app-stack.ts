@@ -4,7 +4,6 @@ import { DestroyAll } from './aspects';
 import { EcsConstruct } from './app/ecs'
 import { AlbConstruct } from './app/alb';
 import { 
-    aws_dynamodb as dynamodb, 
     aws_ec2 as ec2, 
     Aspects 
 } from 'aws-cdk-lib';
@@ -16,12 +15,6 @@ interface AppStackProps extends cdk.StackProps {
 export class AppStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: AppStackProps) {
         super(scope, id, props);
-
-        const dailyTable = new dynamodb.Table(this, 'DailySelection', {
-            partitionKey: { name: 'date', type: dynamodb.AttributeType.STRING },
-            sortKey: { name: 'nr', type: dynamodb.AttributeType.NUMBER },
-            billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-        });
 
         const vpc = props?.vpc ? props.vpc : ec2.Vpc.fromLookup(this, 'Vpc', { isDefault: true });
 

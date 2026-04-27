@@ -22,14 +22,5 @@ describe('AppStack', () => {
         const stack = new AppStack(app, 'TestAppStack', { vpc: mockVpc });
         template = Template.fromStack(stack);
     });
-
-    test('DynamoDB table has correct partition and sort key', () => {
-        template.hasResourceProperties('AWS::DynamoDB::Table', {
-            KeySchema: [
-                { AttributeName: 'date', KeyType: 'HASH' },
-                { AttributeName: 'nr', KeyType: 'RANGE' }
-            ]
-        });
-    });
 });
 

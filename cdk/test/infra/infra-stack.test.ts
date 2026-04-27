@@ -16,4 +16,13 @@ describe('InfraStack', () => {
             RepositoryName: 'backend-images'
         });
     });
+
+    test('DynamoDB table has correct partition and sort key', () => {
+        template.hasResourceProperties('AWS::DynamoDB::Table', {
+            KeySchema: [
+                { AttributeName: 'date', KeyType: 'HASH' },
+                { AttributeName: 'nr', KeyType: 'RANGE' }
+            ]
+        });
+    });
 });

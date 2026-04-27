@@ -22,4 +22,33 @@ describe('AppStack', () => {
     const stack = new AppStack(app, 'TestAppStack', { vpc: mockVpc })
     template = Template.fromStack(stack)
   })
+
+  test('Fargate task definition has correct memory and cpu', () => {
+    template.hasResourceProperties('AWS::ECS::TaskDefinition', {
+      Memory: '512',
+      Cpu: '256',
+    })
+  })
+
+  test('Container exposes port 3000', () => {
+    template.hasResourceProperties('AWS::ECS::TaskDefinition', {
+      ContainerDefinitions: [
+        {
+          PortMappings: [{ ContainerPort: 3000 }],
+        },
+      ],
+    })
+  })
+
+  test('ALB is internet facing', () => {
+    template.hasResourceProperties('AWS::ElasticLoadBalancingV2::LoadBalancer', {
+      Scheme: 'internet-facing',
+    })
+  })
+
+  test('ALB listener is on port 80', () => {
+    template.hasResourceProperties('AWS::ElasticLoadBalancingV2::Listener', {
+      Port: 80,
+    })
+  })
 })

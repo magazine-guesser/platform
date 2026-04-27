@@ -1,59 +1,60 @@
-import * as cdk from 'aws-cdk-lib/core';
-import { Construct } from 'constructs';
-import { GithubOidc } from './oidc';
-import { DestroyAll } from './aspects';
-import { 
-    aws_ecr as ecr, 
-    aws_s3 as s3, 
-    aws_secretsmanager as sm,
-    aws_dynamodb as dynamodb, 
-    Aspects 
-} from 'aws-cdk-lib';
+import * as cdk from 'aws-cdk-lib/core'
+import { Construct } from 'constructs'
+import { GithubOidc } from './oidc'
+import { DestroyAll } from './aspects'
+import {
+  aws_ecr as ecr,
+  aws_s3 as s3,
+  aws_secretsmanager as sm,
+  aws_dynamodb as dynamodb,
+  Aspects,
+} from 'aws-cdk-lib'
 
 export class InfraStack extends cdk.Stack {
-    constructor(scope: Construct, id: string, props?: cdk.StackProps) {
-        super(scope, id, props);
+  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+    super(scope, id, props)
 
-        const adminSecret = new sm.Secret(this, 'AdminSecret', {
-            secretName: 'admin-key',
-            description: 'allows backend admin access through frontend',
-            generateSecretString: {
-                excludePunctuation: true
-            }
-        });
+    const adminSecret = new sm.Secret(this, 'AdminSecret', {
+      secretName: 'admin-key',
+      description: 'allows backend admin access through frontend',
+      generateSecretString: {
+        excludePunctuation: true,
+      },
+    })
 
-        const dailyTable = new dynamodb.Table(this, 'DailySelection', {
-            partitionKey: { name: 'date', type: dynamodb.AttributeType.STRING },
-            sortKey: { name: 'nr', type: dynamodb.AttributeType.NUMBER },
-            billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-        });
+    const dailyTable = new dynamodb.Table(this, 'DailySelection', {
+      partitionKey: { name: 'date', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'nr', type: dynamodb.AttributeType.NUMBER },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+    })
 
+    const containerRepo = new ecr.Repository(this, 'BackendImages', {
+      repositoryName: 'backend-images',
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      emptyOnDelete: true,
+      lifecycleRules: [
+        {
+          maxImageCount: 3,
+          description: 'keep last 3 images',
+        },
+      ],
+    })
 
-        const containerRepo = new ecr.Repository(this, 'BackendImages', {
-            repositoryName: 'backend-images',
-            removalPolicy: cdk.RemovalPolicy.DESTROY,
-            emptyOnDelete: true,
-            lifecycleRules: [{
-                maxImageCount: 3,
-                description: 'keep last 3 images'
-            }]
-        });
+    const frontendBucket = new s3.Bucket(this, 'FrontendBucket', {
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      autoDeleteObjects: true,
+    })
 
-        const frontendBucket = new s3.Bucket(this, 'FrontendBucket', {
-            removalPolicy: cdk.RemovalPolicy.DESTROY,
-            blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
-            autoDeleteObjects: true,
-        });
+    const oicd = new GithubOidc(this, 'GithubOicd', {
+      ecrRepo: containerRepo,
+      orgName: 'magazine-guesser',
+      cdkRepoName: 'platform',
+      backendRepoName: 'backend',
+      frontendBucket,
+      frontendRepoName: 'frontend',
+    })
 
-        const oicd = new GithubOidc(this, 'GithubOicd', {
-            ecrRepo: containerRepo,
-            orgName: 'magazine-guesser',
-            cdkRepoName: 'platform',
-            backendRepoName: 'backend',
-            frontendBucket,
-            frontendRepoName: 'frontend'
-        })
-
-        Aspects.of(this).add(new DestroyAll());
-    }
+    Aspects.of(this).add(new DestroyAll())
+  }
 }

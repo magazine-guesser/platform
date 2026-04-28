@@ -33,6 +33,9 @@ export class EcsConstruct extends Construct {
       secrets: {
         ADMIN_KEY: ecs.Secret.fromSecretsManager(adminSecret),
       },
+      environment: {
+        TABLE_NAME: 'magazines-daily'
+      }
     })
 
     this.sg = new ec2.SecurityGroup(this, 'TaskSg', { vpc: props.vpc })

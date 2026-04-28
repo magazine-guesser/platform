@@ -74,6 +74,22 @@ describe('AppStack', () => {
     })
   })
 
+  test('ALB HTTPS listener is on port 443', () => {
+    template.hasResourceProperties('AWS::ElasticLoadBalancingV2::Listener', {
+      Port: 443,
+    })
+  })
+
+  test('Container has TABLE_NAME env var set', () => {
+    template.hasResourceProperties('AWS::ECS::TaskDefinition', {
+      ContainerDefinitions: [
+        {
+          Environment: [{ Name: 'TABLE_NAME', Value: 'magazines-daily' }],
+        },
+      ],
+    })
+  })
+
   test('Route 53 A record is created for api subdomain', () => {
     template.hasResourceProperties('AWS::Route53::RecordSet', {
       Name: 'api.magazineguessr.com.',

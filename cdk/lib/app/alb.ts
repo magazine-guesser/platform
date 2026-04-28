@@ -3,6 +3,7 @@ import {
   aws_elasticloadbalancingv2 as elbv2,
   aws_ec2 as ec2,
   aws_ecs as ecs,
+  aws_certificatemanager as acm,
   Duration,
 } from 'aws-cdk-lib'
 
@@ -10,6 +11,7 @@ interface AlbProps {
   vpc: ec2.IVpc
   service: ecs.FargateService
   sg: ec2.SecurityGroup
+  certificate: acm.ICertificate
 }
 
 export class AlbConstruct extends Construct {
@@ -23,9 +25,20 @@ export class AlbConstruct extends Construct {
       internetFacing: true,
     })
 
-    const listener = alb.addListener('Listener', {
+    alb.addListener('HttpListener', {
       port: 80,
       open: true,
+      defaultAction: elbv2.ListenerAction.redirect({
+        protocol: 'HTTPS',
+        port: '443',
+        permanent: true
+      })
+    })
+
+    const listener = alb.addListener('HttpsListener', {
+      port: 443,
+      open: true,
+      certificates: [props.certificate]
     })
 
     listener.addTargets('EcsTargets', {

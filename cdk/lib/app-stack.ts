@@ -17,7 +17,7 @@ interface AppStackProps extends cdk.StackProps {
 }
 
 export class AppStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: AppStackProps) {
+  constructor(scope: Construct, id: string, props: AppStackProps) {
     super(scope, id, props)
 
     const vpc = props?.vpc ? props.vpc : ec2.Vpc.fromLookup(this, 'Vpc', { isDefault: true })
@@ -27,6 +27,7 @@ export class AppStack extends cdk.Stack {
       vpc,
       service: ecsConst.service,
       sg: ecsConst.sg,
+      certificate: props.certificate
     })
 
     const hostedZone = route53.HostedZone.fromLookup(this, 'Zone', {

@@ -1,0 +1,2 @@
+#!/bin/sh
+cd cdk && npm test && npx eslint bin/ lib/ test/ && npx prettier --write bin/ lib/ test/

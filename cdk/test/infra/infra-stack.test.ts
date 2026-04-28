@@ -108,8 +108,8 @@ describe('InfraStack: CloudFront', () => {
           {
             ErrorCode: 404,
             ResponseCode: 200,
-            ResponsePagePath: '/index.html'
-          }
+            ResponsePagePath: '/index.html',
+          },
         ],
       },
     })

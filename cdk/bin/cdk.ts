@@ -16,12 +16,12 @@ const certstack = new CertStack(app, 'CertStack', {
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: 'us-east-1',
   },
-  domainName: 'magazineguessr.com'
+  domainName: 'magazineguessr.com',
 })
 
 new InfraStack(app, 'InfraStack', {
   env,
-  certificate: certstack.certificate
+  certificate: certstack.certificate,
 })
 
 new AppStack(app, 'AppStack', { env })

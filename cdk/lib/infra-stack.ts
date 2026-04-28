@@ -69,4 +69,4 @@ export class InfraStack extends cdk.Stack {
 
     Aspects.of(this).add(new DestroyAll())
   }
-} 
+}

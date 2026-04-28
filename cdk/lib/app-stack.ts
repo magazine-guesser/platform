@@ -16,7 +16,7 @@ export class AppStack extends cdk.Stack {
     const vpc = props?.vpc ? props.vpc : ec2.Vpc.fromLookup(this, 'Vpc', { isDefault: true })
 
     const ecsConst = new EcsConstruct(this, 'EcsConstruct', { vpc })
-    const albConst = new AlbConstruct(this, 'AlbConstruct', {
+    new AlbConstruct(this, 'AlbConstruct', {
       vpc,
       service: ecsConst.service,
       sg: ecsConst.sg,

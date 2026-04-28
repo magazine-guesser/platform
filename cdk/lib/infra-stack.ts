@@ -2,19 +2,25 @@ import * as cdk from 'aws-cdk-lib/core'
 import { Construct } from 'constructs'
 import { GithubOidc } from './oidc'
 import { DestroyAll } from './aspects'
+import { CloudFrontConstruct } from './infra/cloudfront'
 import {
   aws_ecr as ecr,
   aws_s3 as s3,
   aws_secretsmanager as sm,
   aws_dynamodb as dynamodb,
+  aws_certificatemanager as acm,
   Aspects,
 } from 'aws-cdk-lib'
 
+interface InfraStackProps extends cdk.StackProps {
+  certificate: acm.ICertificate
+}
+
 export class InfraStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props: InfraStackProps) {
     super(scope, id, props)
 
-    const adminSecret = new sm.Secret(this, 'AdminSecret', {
+    new sm.Secret(this, 'AdminSecret', {
       secretName: 'admin-key',
       description: 'allows backend admin access through frontend',
       generateSecretString: {
@@ -22,7 +28,7 @@ export class InfraStack extends cdk.Stack {
       },
     })
 
-    const dailyTable = new dynamodb.Table(this, 'DailySelection', {
+    new dynamodb.Table(this, 'DailySelection', {
       partitionKey: { name: 'date', type: dynamodb.AttributeType.STRING },
       sortKey: { name: 'nr', type: dynamodb.AttributeType.NUMBER },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
@@ -46,7 +52,13 @@ export class InfraStack extends cdk.Stack {
       autoDeleteObjects: true,
     })
 
-    const oicd = new GithubOidc(this, 'GithubOicd', {
+    new CloudFrontConstruct(this, 'CloudFrontConstruct', {
+      domainName: 'magazineguessr.com',
+      frontendBucket: frontendBucket,
+      certificate: props.certificate,
+    })
+
+    new GithubOidc(this, 'GithubOicd', {
       ecrRepo: containerRepo,
       orgName: 'magazine-guesser',
       cdkRepoName: 'platform',
@@ -57,4 +69,4 @@ export class InfraStack extends cdk.Stack {
 
     Aspects.of(this).add(new DestroyAll())
   }
-}
+} 

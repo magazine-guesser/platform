@@ -29,6 +29,7 @@ export class InfraStack extends cdk.Stack {
     })
 
     new dynamodb.Table(this, 'DailySelection', {
+      tableName: 'magazines-daily',
       partitionKey: { name: 'date', type: dynamodb.AttributeType.STRING },
       sortKey: { name: 'nr', type: dynamodb.AttributeType.NUMBER },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,

@@ -1,13 +1,24 @@
 import * as cdk from 'aws-cdk-lib/core'
 import { Template } from 'aws-cdk-lib/assertions'
 import { AppStack } from '../../lib/app-stack'
-import { aws_ec2 as ec2 } from 'aws-cdk-lib'
+import { aws_ec2 as ec2, aws_certificatemanager as acm } from 'aws-cdk-lib'
+
+const ACCOUNT = '123456789012'
+const REGION = 'eu-central-1'
+const DOMAIN = 'magazineguessr.com'
+
+const hostedZoneContext = {
+  [`hosted-zone:account=${ACCOUNT}:domainName=${DOMAIN}:region=${REGION}`]: {
+    Id: '/hostedzone/TESTZONEID',
+    Name: `${DOMAIN}.`,
+  },
+}
 
 describe('AppStack', () => {
   let template: Template
 
   beforeEach(() => {
-    const app = new cdk.App()
+    const app = new cdk.App({ context: hostedZoneContext })
 
     /* dependency injection with mock vpc,
      * TODO: can be deleted once we pick a vpc and stop using from lookup
@@ -19,7 +30,18 @@ describe('AppStack', () => {
       publicSubnetIds: ['subnets-123'],
     })
 
-    const stack = new AppStack(app, 'TestAppStack', { vpc: mockVpc })
+    const helperStack = new cdk.Stack(app, 'HelperStack')
+    const mockCert = acm.Certificate.fromCertificateArn(
+      helperStack,
+      'MockCert',
+      `arn:aws:acm:us-east-1:${ACCOUNT}:certificate/mock-cert-id`
+    )
+
+    const stack = new AppStack(app, 'TestAppStack', {
+      env: { account: ACCOUNT, region: REGION },
+      vpc: mockVpc,
+      certificate: mockCert,
+    })
     template = Template.fromStack(stack)
   })
 
@@ -49,6 +71,13 @@ describe('AppStack', () => {
   test('ALB listener is on port 80', () => {
     template.hasResourceProperties('AWS::ElasticLoadBalancingV2::Listener', {
       Port: 80,
+    })
+  })
+
+  test('Route 53 A record is created for api subdomain', () => {
+    template.hasResourceProperties('AWS::Route53::RecordSet', {
+      Name: 'api.magazineguessr.com.',
+      Type: 'A',
     })
   })
 })

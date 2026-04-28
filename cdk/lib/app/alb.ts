@@ -13,6 +13,9 @@ interface AlbProps {
 }
 
 export class AlbConstruct extends Construct {
+
+  public readonly alb: elbv2.ApplicationLoadBalancer
+
   constructor(scope: Construct, id: string, props: AlbProps) {
     super(scope, id)
 
@@ -35,6 +38,8 @@ export class AlbConstruct extends Construct {
         interval: Duration.seconds(30),
       },
     })
+
+    this.alb = alb
 
     props.sg.addIngressRule(
       ec2.Peer.securityGroupId(alb.connections.securityGroups[0].securityGroupId),

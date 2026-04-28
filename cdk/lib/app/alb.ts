@@ -13,7 +13,6 @@ interface AlbProps {
 }
 
 export class AlbConstruct extends Construct {
-
   public readonly alb: elbv2.ApplicationLoadBalancer
 
   constructor(scope: Construct, id: string, props: AlbProps) {

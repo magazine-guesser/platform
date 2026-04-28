@@ -26,5 +26,5 @@ new InfraStack(app, 'InfraStack', {
 
 new AppStack(app, 'AppStack', {
   env,
-  certificate: certstack.certificate
+  certificate: certstack.certificate,
 })

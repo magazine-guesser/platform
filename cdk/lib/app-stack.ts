@@ -8,11 +8,11 @@ import {
   aws_certificatemanager as acm,
   aws_route53 as route53,
   aws_route53_targets as targets,
-  Aspects
+  Aspects,
 } from 'aws-cdk-lib'
 
 interface AppStackProps extends cdk.StackProps {
-  vpc?: ec2.IVpc,
+  vpc?: ec2.IVpc
   certificate: acm.ICertificate
 }
 
@@ -36,9 +36,7 @@ export class AppStack extends cdk.Stack {
     new route53.ARecord(this, 'ApiRecord', {
       zone: hostedZone,
       recordName: 'api',
-      target: route53.RecordTarget.fromAlias(
-        new targets.LoadBalancerTarget(albConst.alb)
-      )
+      target: route53.RecordTarget.fromAlias(new targets.LoadBalancerTarget(albConst.alb)),
     })
 
     Aspects.of(this).add(new DestroyAll())

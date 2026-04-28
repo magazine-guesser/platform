@@ -1,5 +1,5 @@
 import * as cdk from 'aws-cdk-lib/core'
-import { Template } from 'aws-cdk-lib/assertions'
+import { Template, Match } from 'aws-cdk-lib/assertions'
 import { InfraStack } from '../../lib/infra-stack'
 import { aws_certificatemanager as acm } from 'aws-cdk-lib'
 
@@ -111,6 +111,39 @@ describe('InfraStack: CloudFront', () => {
             ResponsePagePath: '/index.html',
           },
         ],
+      },
+    })
+  })
+})
+
+describe('InfraStack: OIDC frontend role permissions', () => {
+  let template: Template
+  beforeEach(() => {
+    template = buildTemplate()
+  })
+
+  test('frontend role can list and read/write the S3 bucket', () => {
+    template.hasResourceProperties('AWS::IAM::Policy', {
+      PolicyDocument: {
+        Statement: Match.arrayWith([
+          Match.objectLike({
+            Action: Match.arrayWith(['s3:GetObject*', 's3:GetBucket*', 's3:List*']),
+            Effect: 'Allow',
+          }),
+        ]),
+      },
+    })
+  })
+
+  test('frontend role can create CloudFront invalidations', () => {
+    template.hasResourceProperties('AWS::IAM::Policy', {
+      PolicyDocument: {
+        Statement: Match.arrayWith([
+          Match.objectLike({
+            Action: 'cloudfront:CreateInvalidation',
+            Effect: 'Allow',
+          }),
+        ]),
       },
     })
   })

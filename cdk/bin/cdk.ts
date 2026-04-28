@@ -22,9 +22,11 @@ const certstack = new CertStack(app, 'CertStack', {
 new InfraStack(app, 'InfraStack', {
   env,
   certificate: certstack.certificate,
+  crossRegionReferences: true,
 })
 
 new AppStack(app, 'AppStack', {
   env,
   certificate: certstack.certificate,
+  crossRegionReferences: true,
 })

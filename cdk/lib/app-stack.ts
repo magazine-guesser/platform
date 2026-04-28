@@ -27,7 +27,7 @@ export class AppStack extends cdk.Stack {
       vpc,
       service: ecsConst.service,
       sg: ecsConst.sg,
-      certificate: props.certificate
+      certificate: props.certificate,
     })
 
     const hostedZone = route53.HostedZone.fromLookup(this, 'Zone', {

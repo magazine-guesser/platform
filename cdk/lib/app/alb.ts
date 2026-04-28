@@ -31,14 +31,14 @@ export class AlbConstruct extends Construct {
       defaultAction: elbv2.ListenerAction.redirect({
         protocol: 'HTTPS',
         port: '443',
-        permanent: true
-      })
+        permanent: true,
+      }),
     })
 
     const listener = alb.addListener('HttpsListener', {
       port: 443,
       open: true,
-      certificates: [props.certificate]
+      certificates: [props.certificate],
     })
 
     listener.addTargets('EcsTargets', {

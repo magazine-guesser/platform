@@ -2,6 +2,7 @@ import { Construct } from 'constructs'
 import { aws_iam as iam } from 'aws-cdk-lib'
 import { Repository } from 'aws-cdk-lib/aws-ecr'
 import { Bucket } from 'aws-cdk-lib/aws-s3'
+import { Distribution } from 'aws-cdk-lib/aws-cloudfront'
 
 interface GithubOidcProps {
   ecrRepo: Repository
@@ -10,6 +11,7 @@ interface GithubOidcProps {
   backendRepoName: string
   frontendBucket: Bucket
   frontendRepoName: string
+  distribution: Distribution
 }
 
 export class GithubOidc extends Construct {
@@ -42,7 +44,8 @@ export class GithubOidc extends Construct {
       props.orgName,
       props.frontendRepoName
     )
-    props.frontendBucket.grantWrite(this.frontendRole) //TODO: cloudfront permission
+    props.frontendBucket.grantReadWrite(this.frontendRole)
+    props.distribution.grantCreateInvalidation(this.frontendRole)
   }
 
   private createRole(

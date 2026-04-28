@@ -53,7 +53,7 @@ export class InfraStack extends cdk.Stack {
       autoDeleteObjects: true,
     })
 
-    new CloudFrontConstruct(this, 'CloudFrontConstruct', {
+    const cfConst = new CloudFrontConstruct(this, 'CloudFrontConstruct', {
       domainName: 'magazineguessr.com',
       frontendBucket: frontendBucket,
       certificate: props.certificate,
@@ -66,6 +66,7 @@ export class InfraStack extends cdk.Stack {
       backendRepoName: 'backend',
       frontendBucket,
       frontendRepoName: 'frontend',
+      distribution: cfConst.distribution,
     })
 
     Aspects.of(this).add(new DestroyAll())

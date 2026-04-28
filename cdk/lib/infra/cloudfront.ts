@@ -15,6 +15,8 @@ interface CloudFrontProps {
 }
 
 export class CloudFrontConstruct extends Construct {
+  public readonly distribution: cloudfront.Distribution
+
   constructor(scope: Construct, id: string, props: CloudFrontProps) {
     super(scope, id)
 
@@ -22,7 +24,7 @@ export class CloudFrontConstruct extends Construct {
       domainName: props.domainName,
     })
 
-    const distribution = new cloudfront.Distribution(this, 'Distribution', {
+    this.distribution = new cloudfront.Distribution(this, 'Distribution', {
       defaultBehavior: {
         origin: origins.S3BucketOrigin.withOriginAccessControl(props.frontendBucket),
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
@@ -46,7 +48,7 @@ export class CloudFrontConstruct extends Construct {
 
     new route53.ARecord(this, 'AliasRecord', {
       zone: hostedZone,
-      target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(distribution)),
+      target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(this.distribution)),
     })
   }
 }

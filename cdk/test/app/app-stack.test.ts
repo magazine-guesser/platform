@@ -20,9 +20,6 @@ describe('AppStack', () => {
   beforeEach(() => {
     const app = new cdk.App({ context: hostedZoneContext })
 
-    /* dependency injection with mock vpc,
-     * TODO: can be deleted once we pick a vpc and stop using from lookup
-     */
     const vpcStack = new cdk.Stack(app, 'VpcStack')
     const mockVpc = ec2.Vpc.fromVpcAttributes(vpcStack, 'MockVpc', {
       vpcId: 'vpc-123',

@@ -22,6 +22,7 @@ export class InfraStack extends cdk.Stack {
   public readonly hostedZone: route53.IHostedZone
   public readonly magazineTable: dynamodb.Table
   public readonly adminKey: sm.Secret
+  public readonly artifactBucket: s3.Bucket
 
   constructor(scope: Construct, id: string, props: InfraStackProps) {
     super(scope, id, props)
@@ -57,13 +58,20 @@ export class InfraStack extends cdk.Stack {
       autoDeleteObjects: true,
     })
 
+    this.artifactBucket = new s3.Bucket(this, 'ArtifactBucket', {
+      bucketName: 'magazineguessr-artifacts',
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+    })
+
     const cfConst = new CloudFrontConstruct(this, 'CloudFrontConstruct', {
       domainName: props.domainName,
       frontendBucket: frontendBucket,
       certificate: props.certificate,
     })
 
-    new GithubOidc(this, 'GithubOicd', {
+    const oidc = new GithubOidc(this, 'GithubOicd', {
       orgName: props.domainName,
       cdkRepoName: 'platform',
       backendRepoName: 'backend',
@@ -71,6 +79,8 @@ export class InfraStack extends cdk.Stack {
       frontendRepoName: 'frontend',
       distribution: cfConst.distribution,
     })
+
+    this.artifactBucket.grantReadWrite(oidc.backendRole)
 
     Aspects.of(this).add(new DestroyAll())
   }

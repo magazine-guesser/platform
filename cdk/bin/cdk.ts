@@ -34,5 +34,6 @@ new AppStack(app, 'AppStack', {
   magazineTable: infrastack.magazineTable,
   hostedZone: infrastack.hostedZone,
   certificate: infrastack.regionalCert,
+  artifactBucket: infrastack.artifactBucket,
   crossRegionReferences: true,
 })

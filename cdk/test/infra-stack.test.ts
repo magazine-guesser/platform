@@ -60,6 +60,12 @@ describe('InfraStack: storage', () => {
     })
   })
 
+  test('artifact bucket has correct fixed name', () => {
+    template.hasResourceProperties('AWS::S3::Bucket', {
+      BucketName: 'magazineguessr-artifacts',
+    })
+  })
+
   test('Secrets Manager secret is created for admin key', () => {
     template.hasResourceProperties('AWS::SecretsManager::Secret', {
       Name: 'admin-key',
@@ -173,6 +179,27 @@ describe('InfraStack: OIDC backend role permissions', () => {
           ]),
         }),
       ]),
+    })
+  })
+
+  test('backend role has read/write access to the artifact bucket', () => {
+    template.hasResourceProperties('AWS::IAM::Policy', {
+      PolicyDocument: {
+        Statement: Match.arrayWith([
+          Match.objectLike({
+            Action: Match.arrayWith([
+              's3:GetObject*',
+              's3:PutObject',
+              's3:PutObjectLegalHold',
+              's3:PutObjectRetention',
+              's3:PutObjectTagging',
+              's3:PutObjectVersionTagging',
+              's3:Abort*',
+            ]),
+            Effect: 'Allow',
+          }),
+        ]),
+      },
     })
   })
 })

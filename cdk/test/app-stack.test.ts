@@ -6,6 +6,7 @@ import {
   aws_route53 as route53,
   aws_dynamodb as dynamodb,
   aws_secretsmanager as sm,
+  aws_s3 as s3,
 } from 'aws-cdk-lib'
 
 const ACCOUNT = '123456789012'
@@ -34,6 +35,11 @@ const buildTemplate = () => {
   })
   const mockTable = dynamodb.Table.fromTableName(helperStack, 'MockTable', 'magazines-daily')
   const mockSecret = sm.Secret.fromSecretNameV2(helperStack, 'MockSecret', 'admin-key')
+  const mockArtifactBucket = s3.Bucket.fromBucketName(
+    helperStack,
+    'MockArtifactBucket',
+    'magazineguessr-artifacts'
+  )
 
   const stack = new AppStack(app, 'TestAppStack', {
     env: { account: ACCOUNT, region: REGION },
@@ -42,6 +48,7 @@ const buildTemplate = () => {
     domainName: DOMAIN,
     magazineTable: mockTable,
     adminKey: mockSecret,
+    artifactBucket: mockArtifactBucket,
   })
 
   return Template.fromStack(stack)
@@ -78,6 +85,15 @@ describe('AppStack: Lambda', () => {
   test('Lambda function has explicit name', () => {
     template.hasResourceProperties('AWS::Lambda::Function', {
       FunctionName: 'magazineguessr-backend',
+    })
+  })
+
+  test('Lambda function code is loaded from S3 artifact bucket', () => {
+    template.hasResourceProperties('AWS::Lambda::Function', {
+      Code: {
+        S3Bucket: 'magazineguessr-artifacts',
+        S3Key: 'backend/latest.zip',
+      },
     })
   })
 

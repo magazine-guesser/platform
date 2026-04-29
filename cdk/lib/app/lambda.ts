@@ -3,11 +3,13 @@ import {
   aws_lambda as lambda,
   aws_dynamodb as dynamodb,
   aws_secretsmanager as sm,
+  aws_s3 as s3,
 } from 'aws-cdk-lib'
 
 interface LambdaProps {
   table: dynamodb.ITable
   adminKey: sm.ISecret
+  artifactBucket: s3.IBucket
 }
 
 export class LambdaConstruct extends Construct {
@@ -22,7 +24,7 @@ export class LambdaConstruct extends Construct {
       functionName: 'magazineguessr-backend',
       runtime: lambda.Runtime.NODEJS_22_X,
       handler: 'lambda.handler',
-      code: lambda.Code.fromInline('exports.handler = async () => ({ statusCode: 200 })'),
+      code: lambda.Code.fromBucket(props.artifactBucket, 'backend/latest.zip'),
       environment: {
         TABLE_NAME: 'magazines-daily',
       },

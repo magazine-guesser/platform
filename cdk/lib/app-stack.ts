@@ -9,6 +9,7 @@ import {
   aws_route53 as route53,
   aws_route53_targets as targets,
   aws_dynamodb as dynamodb,
+  aws_s3 as s3,
   Aspects,
 } from 'aws-cdk-lib'
 
@@ -18,6 +19,7 @@ interface AppStackProps extends cdk.StackProps {
   certificate: acm.ICertificate
   hostedZone: route53.IHostedZone
   domainName: string
+  artifactBucket: s3.IBucket
 }
 
 export class AppStack extends cdk.Stack {
@@ -27,6 +29,7 @@ export class AppStack extends cdk.Stack {
     const lambdaConstruct = new LambdaConstruct(this, 'LambdaConstruct', {
       table: props.magazineTable,
       adminKey: props.adminKey,
+      artifactBucket: props.artifactBucket,
     })
 
     const gatewayConstruct = new GatewayConstruct(this, 'GatewayConstruct', {

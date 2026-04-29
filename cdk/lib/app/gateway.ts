@@ -25,10 +25,30 @@ export class GatewayConstruct extends Construct {
         'ProdIntegration',
         props.prodAlias
       ),
+      createDefaultStage: false,
+    })
+
+    const prodStage = new apigwv2.HttpStage(this, 'ProdStage', {
+      httpApi: prodApi,
+      autoDeploy: true,
+      throttle: {
+        rateLimit: 50,
+        burstLimit: 100,
+      },
     })
 
     const devApi = new apigwv2.HttpApi(this, 'DevApi', {
       defaultIntegration: new integrations.HttpLambdaIntegration('DevIntegration', props.devAlias),
+      createDefaultStage: false,
+    })
+
+    const devStage = new apigwv2.HttpStage(this, 'DevStage', {
+      httpApi: devApi,
+      autoDeploy: true,
+      throttle: {
+        rateLimit: 10,
+        burstLimit: 20,
+      },
     })
 
     this.prodDomain = new apigwv2.DomainName(this, 'ProdDomain', {
@@ -44,11 +64,13 @@ export class GatewayConstruct extends Construct {
     new apigwv2.ApiMapping(this, 'ProdMapping', {
       api: prodApi,
       domainName: this.prodDomain,
+      stage: prodStage,
     })
 
     new apigwv2.ApiMapping(this, 'DevMapping', {
       api: devApi,
       domainName: this.devDomain,
+      stage: devStage,
     })
   }
 }

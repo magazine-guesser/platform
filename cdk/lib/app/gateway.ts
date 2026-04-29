@@ -32,12 +32,12 @@ export class GatewayConstruct extends Construct {
     })
 
     this.prodDomain = new apigwv2.DomainName(this, 'ProdDomain', {
-      domainName: 'api.magazineguessr.com',
+      domainName: `api.${props.domainName}`,
       certificate: props.certificate,
     })
 
     this.devDomain = new apigwv2.DomainName(this, 'DevDomain', {
-      domainName: 'api.dev.magazineguessr.com',
+      domainName: `api.dev.${props.domainName}`,
       certificate: props.certificate,
     })
 

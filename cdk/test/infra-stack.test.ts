@@ -76,7 +76,7 @@ describe('InfraStack: regional certificate', () => {
   test('regional ACM certificate covers the domain and wildcard', () => {
     template.hasResourceProperties('AWS::CertificateManager::Certificate', {
       DomainName: DOMAIN,
-      SubjectAlternativeNames: [`*.${DOMAIN}`],
+      SubjectAlternativeNames: [`*.${DOMAIN}`, `*.dev.${DOMAIN}`],
     })
   })
 })

@@ -27,12 +27,12 @@ export class InfraStack extends cdk.Stack {
     super(scope, id, props)
 
     this.hostedZone = route53.HostedZone.fromLookup(this, 'Zone', {
-      domainName: 'magazineguessr.com',
+      domainName: props.domainName,
     })
 
     this.regionalCert = new acm.Certificate(this, 'RegionalCert', {
-      domainName: 'magazineguessr.com',
-      subjectAlternativeNames: ['*.magazineguessr.com'],
+      domainName: props.domainName,
+      subjectAlternativeNames: [`*.${props.domainName}`, `*.dev.${props.domainName}`],
       validation: acm.CertificateValidation.fromDns(this.hostedZone),
     })
 
@@ -58,13 +58,13 @@ export class InfraStack extends cdk.Stack {
     })
 
     const cfConst = new CloudFrontConstruct(this, 'CloudFrontConstruct', {
-      domainName: 'magazineguessr.com',
+      domainName: props.domainName,
       frontendBucket: frontendBucket,
       certificate: props.certificate,
     })
 
     new GithubOidc(this, 'GithubOicd', {
-      orgName: 'magazine-guesser',
+      orgName: props.domainName,
       cdkRepoName: 'platform',
       backendRepoName: 'backend',
       frontendBucket,

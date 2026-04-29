@@ -65,5 +65,13 @@
         ]
       }
     ]
+  },
+  "hosted-zone:account=464108382357:domainName=magazineguessr.com:region=us-east-1": {
+    "Id": "/hostedzone/Z029705510RX19XO7C75P",
+    "Name": "magazineguessr.com."
+  },
+  "hosted-zone:account=464108382357:domainName=magazineguessr.com:region=eu-central-1": {
+    "Id": "/hostedzone/Z029705510RX19XO7C75P",
+    "Name": "magazineguessr.com."
   }
 }

@@ -1,15 +1,39 @@
 #!/usr/bin/env node
-import * as cdk from 'aws-cdk-lib/core';
-import { AppStack } from '../lib/app-stack';
-import { InfraStack } from '../lib/infra-stack';
-import { aws_ec2 as ec2 } from 'aws-cdk-lib';
+import * as cdk from 'aws-cdk-lib/core'
+import { AppStack } from '../lib/app-stack'
+import { InfraStack } from '../lib/infra-stack'
+import { CertStack } from '../lib/cert-stack'
 
-const app = new cdk.App();
+const app = new cdk.App()
+const domainName = 'magazineguessr.com'
 
 const env = {
   account: process.env.CDK_DEFAULT_ACCOUNT,
   region: process.env.CDK_DEFAULT_REGION,
-};
+}
 
-new AppStack(app, 'AppStack', { env });
-new InfraStack(app, 'InfraStack', { env });
+const certstack = new CertStack(app, 'CertStack', {
+  env: {
+    account: process.env.CDK_DEFAULT_ACCOUNT,
+    region: 'us-east-1',
+  },
+  domainName,
+})
+
+const infrastack = new InfraStack(app, 'InfraStack', {
+  env,
+  domainName,
+  certificate: certstack.certificate,
+  crossRegionReferences: true,
+})
+
+new AppStack(app, 'AppStack', {
+  env,
+  domainName,
+  adminKey: infrastack.adminKey,
+  magazineTable: infrastack.magazineTable,
+  hostedZone: infrastack.hostedZone,
+  certificate: infrastack.regionalCert,
+  artifactBucket: infrastack.artifactBucket,
+  crossRegionReferences: true,
+})

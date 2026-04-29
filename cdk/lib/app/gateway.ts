@@ -13,6 +13,14 @@ interface GatewayProps {
   domainName: string
 }
 
+interface ApiOptions {
+  id: string
+  alias: lambda.IAlias
+  domainName: string
+  certificate: acm.ICertificate
+  throttle: { rateLimit: number; burstLimit: number }
+}
+
 export class GatewayConstruct extends Construct {
   public readonly prodDomain: apigwv2.DomainName
   public readonly devDomain: apigwv2.DomainName
@@ -20,57 +28,49 @@ export class GatewayConstruct extends Construct {
   constructor(scope: Construct, id: string, props: GatewayProps) {
     super(scope, id)
 
-    const prodApi = new apigwv2.HttpApi(this, 'ProdApi', {
+    this.prodDomain = this.createApi(scope, {
+      id: 'Prod',
+      alias: props.prodAlias,
+      domainName: `api.${props.domainName}`,
+      certificate: props.certificate,
+      throttle: { rateLimit: 50, burstLimit: 100 },
+    })
+
+    this.devDomain = this.createApi(scope, {
+      id: 'Dev',
+      alias: props.devAlias,
+      domainName: `api.dev.${props.domainName}`,
+      certificate: props.certificate,
+      throttle: { rateLimit: 10, burstLimit: 20 },
+    })
+  }
+
+  private createApi(scope: Construct, options: ApiOptions): apigwv2.DomainName {
+    const api = new apigwv2.HttpApi(scope, `${options.id}Api`, {
       defaultIntegration: new integrations.HttpLambdaIntegration(
-        'ProdIntegration',
-        props.prodAlias
+        `${options.id}Integration`,
+        options.alias
       ),
       createDefaultStage: false,
     })
 
-    const prodStage = new apigwv2.HttpStage(this, 'ProdStage', {
-      httpApi: prodApi,
+    const stage = new apigwv2.HttpStage(scope, `${options.id}Stage`, {
+      httpApi: api,
       autoDeploy: true,
-      throttle: {
-        rateLimit: 50,
-        burstLimit: 100,
-      },
+      throttle: options.throttle,
     })
 
-    const devApi = new apigwv2.HttpApi(this, 'DevApi', {
-      defaultIntegration: new integrations.HttpLambdaIntegration('DevIntegration', props.devAlias),
-      createDefaultStage: false,
+    const domain = new apigwv2.DomainName(scope, `${options.id}Domain`, {
+      domainName: options.domainName,
+      certificate: options.certificate,
     })
 
-    const devStage = new apigwv2.HttpStage(this, 'DevStage', {
-      httpApi: devApi,
-      autoDeploy: true,
-      throttle: {
-        rateLimit: 10,
-        burstLimit: 20,
-      },
+    new apigwv2.ApiMapping(scope, `${options.id}Mapping`, {
+      api,
+      domainName: domain,
+      stage,
     })
 
-    this.prodDomain = new apigwv2.DomainName(this, 'ProdDomain', {
-      domainName: `api.${props.domainName}`,
-      certificate: props.certificate,
-    })
-
-    this.devDomain = new apigwv2.DomainName(this, 'DevDomain', {
-      domainName: `api.dev.${props.domainName}`,
-      certificate: props.certificate,
-    })
-
-    new apigwv2.ApiMapping(this, 'ProdMapping', {
-      api: prodApi,
-      domainName: this.prodDomain,
-      stage: prodStage,
-    })
-
-    new apigwv2.ApiMapping(this, 'DevMapping', {
-      api: devApi,
-      domainName: this.devDomain,
-      stage: devStage,
-    })
+    return domain
   }
 }

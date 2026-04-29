@@ -4,7 +4,6 @@ import { GithubOidc } from './oidc'
 import { DestroyAll } from './aspects'
 import { CloudFrontConstruct } from './infra/cloudfront'
 import {
-  aws_ecr as ecr,
   aws_s3 as s3,
   aws_secretsmanager as sm,
   aws_dynamodb as dynamodb,
@@ -35,18 +34,6 @@ export class InfraStack extends cdk.Stack {
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
     })
 
-    const containerRepo = new ecr.Repository(this, 'BackendImages', {
-      repositoryName: 'backend-images',
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
-      emptyOnDelete: true,
-      lifecycleRules: [
-        {
-          maxImageCount: 3,
-          description: 'keep last 3 images',
-        },
-      ],
-    })
-
     const frontendBucket = new s3.Bucket(this, 'FrontendBucket', {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
@@ -60,7 +47,6 @@ export class InfraStack extends cdk.Stack {
     })
 
     new GithubOidc(this, 'GithubOicd', {
-      ecrRepo: containerRepo,
       orgName: 'magazine-guesser',
       cdkRepoName: 'platform',
       backendRepoName: 'backend',

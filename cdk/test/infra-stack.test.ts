@@ -1,6 +1,6 @@
 import * as cdk from 'aws-cdk-lib/core'
 import { Template, Match } from 'aws-cdk-lib/assertions'
-import { InfraStack } from '../../lib/infra-stack'
+import { InfraStack } from '../lib/infra-stack'
 import { aws_certificatemanager as acm } from 'aws-cdk-lib'
 
 const ACCOUNT = '123456789012'
@@ -37,12 +37,6 @@ describe('InfraStack: storage', () => {
   let template: Template
   beforeEach(() => {
     template = buildTemplate()
-  })
-
-  test('ECR repository is created with the correct name', () => {
-    template.hasResourceProperties('AWS::ECR::Repository', {
-      RepositoryName: 'backend-images',
-    })
   })
 
   test('DynamoDB table has correct partition and sort key', () => {
@@ -145,6 +139,25 @@ describe('InfraStack: OIDC frontend role permissions', () => {
           }),
         ]),
       },
+    })
+  })
+})
+
+describe('InfraStack: OIDC backend role permissions', () => {
+  let template: Template
+  beforeEach(() => {
+    template = buildTemplate()
+  })
+
+  test('backend role has Lambda full access managed policy', () => {
+    template.hasResourceProperties('AWS::IAM::Role', {
+      ManagedPolicyArns: Match.arrayWith([
+        Match.objectLike({
+          'Fn::Join': Match.arrayWith([
+            Match.arrayWith([Match.stringLikeRegexp('AWSLambda_FullAccess')]),
+          ]),
+        }),
+      ]),
     })
   })
 })

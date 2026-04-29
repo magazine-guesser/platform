@@ -1,11 +1,9 @@
 import { Construct } from 'constructs'
 import { aws_iam as iam } from 'aws-cdk-lib'
-import { Repository } from 'aws-cdk-lib/aws-ecr'
 import { Bucket } from 'aws-cdk-lib/aws-s3'
 import { Distribution } from 'aws-cdk-lib/aws-cloudfront'
 
 interface GithubOidcProps {
-  ecrRepo: Repository
   orgName: string
   cdkRepoName: string
   backendRepoName: string
@@ -36,7 +34,9 @@ export class GithubOidc extends Construct {
       props.orgName,
       props.backendRepoName
     )
-    props.ecrRepo.grantPullPush(this.backendRole)
+    this.backendRole.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName('AWSLambda_FullAccess')
+    )
 
     this.frontendRole = this.createRole(
       'FrontendRole',

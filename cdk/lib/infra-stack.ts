@@ -72,7 +72,7 @@ export class InfraStack extends cdk.Stack {
     })
 
     const oidc = new GithubOidc(this, 'GithubOicd', {
-      orgName: props.domainName,
+      orgName: 'magazine-guesser',
       cdkRepoName: 'platform',
       backendRepoName: 'backend',
       frontendBucket,

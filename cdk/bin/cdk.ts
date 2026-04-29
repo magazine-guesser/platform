@@ -5,6 +5,7 @@ import { InfraStack } from '../lib/infra-stack'
 import { CertStack } from '../lib/cert-stack'
 
 const app = new cdk.App()
+const domainName = 'magazineguessr.com'
 
 const env = {
   account: process.env.CDK_DEFAULT_ACCOUNT,
@@ -16,17 +17,22 @@ const certstack = new CertStack(app, 'CertStack', {
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: 'us-east-1',
   },
-  domainName: 'magazineguessr.com',
+  domainName,
 })
 
-new InfraStack(app, 'InfraStack', {
+const infrastack = new InfraStack(app, 'InfraStack', {
   env,
+  domainName,
   certificate: certstack.certificate,
   crossRegionReferences: true,
 })
 
 new AppStack(app, 'AppStack', {
   env,
-  certificate: certstack.certificate,
+  domainName,
+  adminKey: infrastack.adminKey,
+  magazineTable: infrastack.magazineTable,
+  hostedZone: infrastack.hostedZone,
+  certificate: infrastack.regionalCert,
   crossRegionReferences: true,
 })

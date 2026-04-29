@@ -13,7 +13,11 @@ import {
 } from 'aws-cdk-lib'
 
 interface AppStackProps extends cdk.StackProps {
+  adminKey: sm.ISecret
+  magazineTable: dynamodb.ITable
   certificate: acm.ICertificate
+  hostedZone: route53.IHostedZone
+  domainName: string
 }
 
 export class AppStack extends cdk.Stack {
@@ -21,22 +25,19 @@ export class AppStack extends cdk.Stack {
     super(scope, id, props)
 
     const lambdaConstruct = new LambdaConstruct(this, 'LambdaConstruct', {
-      table: dynamodb.Table.fromTableName(this, 'MagazineTable', 'magazines-daily'),
-      adminSecret: sm.Secret.fromSecretNameV2(this, 'AdminSecret', 'admin-key'),
+      table: props.magazineTable,
+      adminKey: props.adminKey,
     })
 
     const gatewayConstruct = new GatewayConstruct(this, 'GatewayConstruct', {
       devAlias: lambdaConstruct.devAlias,
       prodAlias: lambdaConstruct.prodAlias,
       certificate: props.certificate,
-    })
-
-    const hostedZone = route53.HostedZone.fromLookup(this, 'Zone', {
-      domainName: 'magazineguessr.com',
+      domainName: props.domainName,
     })
 
     new route53.ARecord(this, 'ProdApiRecord', {
-      zone: hostedZone,
+      zone: props.hostedZone,
       recordName: 'api',
       target: route53.RecordTarget.fromAlias(
         new targets.ApiGatewayv2DomainProperties(
@@ -47,7 +48,7 @@ export class AppStack extends cdk.Stack {
     })
 
     new route53.ARecord(this, 'DevApiRecord', {
-      zone: hostedZone,
+      zone: props.hostedZone,
       recordName: 'api.dev',
       target: route53.RecordTarget.fromAlias(
         new targets.ApiGatewayv2DomainProperties(

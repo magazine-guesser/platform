@@ -10,6 +10,7 @@ interface GatewayProps {
   devAlias: lambda.IAlias
   prodAlias: lambda.IAlias
   certificate: acm.ICertificate
+  domainName: string
 }
 
 export class GatewayConstruct extends Construct {

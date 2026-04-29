@@ -1,7 +1,12 @@
 import * as cdk from 'aws-cdk-lib/core'
 import { Template, Match } from 'aws-cdk-lib/assertions'
 import { AppStack } from '../lib/app-stack'
-import { aws_certificatemanager as acm } from 'aws-cdk-lib'
+import {
+  aws_certificatemanager as acm,
+  aws_route53 as route53,
+  aws_dynamodb as dynamodb,
+  aws_secretsmanager as sm,
+} from 'aws-cdk-lib'
 
 const ACCOUNT = '123456789012'
 const REGION = 'eu-central-1'
@@ -21,12 +26,22 @@ const buildTemplate = () => {
   const mockCert = acm.Certificate.fromCertificateArn(
     helperStack,
     'MockCert',
-    `arn:aws:acm:us-east-1:${ACCOUNT}:certificate/mock-cert-id`
+    `arn:aws:acm:eu-central-1:${ACCOUNT}:certificate/mock-cert-id`
   )
+  const mockHostedZone = route53.HostedZone.fromHostedZoneAttributes(helperStack, 'MockZone', {
+    hostedZoneId: 'TESTZONEID',
+    zoneName: DOMAIN,
+  })
+  const mockTable = dynamodb.Table.fromTableName(helperStack, 'MockTable', 'magazines-daily')
+  const mockSecret = sm.Secret.fromSecretNameV2(helperStack, 'MockSecret', 'admin-key')
 
   const stack = new AppStack(app, 'TestAppStack', {
     env: { account: ACCOUNT, region: REGION },
     certificate: mockCert,
+    hostedZone: mockHostedZone,
+    domainName: DOMAIN,
+    magazineTable: mockTable,
+    adminKey: mockSecret,
   })
 
   return Template.fromStack(stack)

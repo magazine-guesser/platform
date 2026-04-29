@@ -28,6 +28,7 @@ const buildTemplate = () => {
   const stack = new InfraStack(app, 'TestInfraStack', {
     env: { account: ACCOUNT, region: REGION },
     certificate: mockCert,
+    domainName: DOMAIN,
   })
 
   return Template.fromStack(stack)
@@ -62,6 +63,20 @@ describe('InfraStack: storage', () => {
   test('Secrets Manager secret is created for admin key', () => {
     template.hasResourceProperties('AWS::SecretsManager::Secret', {
       Name: 'admin-key',
+    })
+  })
+})
+
+describe('InfraStack: regional certificate', () => {
+  let template: Template
+  beforeEach(() => {
+    template = buildTemplate()
+  })
+
+  test('regional ACM certificate covers the domain and wildcard', () => {
+    template.hasResourceProperties('AWS::CertificateManager::Certificate', {
+      DomainName: DOMAIN,
+      SubjectAlternativeNames: [`*.${DOMAIN}`],
     })
   })
 })

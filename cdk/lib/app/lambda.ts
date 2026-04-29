@@ -7,7 +7,7 @@ import {
 
 interface LambdaProps {
   table: dynamodb.ITable
-  adminSecret: sm.ISecret
+  adminKey: sm.ISecret
 }
 
 export class LambdaConstruct extends Construct {
@@ -29,7 +29,7 @@ export class LambdaConstruct extends Construct {
     })
 
     props.table.grantReadData(this.fn)
-    props.adminSecret.grantRead(this.fn)
+    props.adminKey.grantRead(this.fn)
 
     this.devAlias = new lambda.Alias(this, 'DevAlias', {
       aliasName: 'dev',

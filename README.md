@@ -12,7 +12,7 @@ ACM wildcard TLS certificate covering `magazineguessr.com` and `*.magazineguessr
 ### InfraStack
 Persistent infrastructure. Safe to deploy independently.
 
-- **S3*: frontend hosting bucket (private, OAC access only)
+- **S3**: frontend hosting bucket (private, OAC access only)
 - **CloudFront**: CDN distribution with HTTPS redirect, custom domain, and SPA fallback.
 - **DynamoDB**: `magazines-daily` table. PK: `date` (STRING), SK: `nr` (NUMBER). On-demand billing.
 - **Secrets Manager**: `admin-key` secret for backend admin auth

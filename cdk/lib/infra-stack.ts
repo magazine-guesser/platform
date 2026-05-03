@@ -56,6 +56,7 @@ export class InfraStack extends cdk.Stack {
     this.magazinesPoolTable = new dynamodb.Table(this, 'MagazinesPool', {
       tableName: 'magazines-pool',
       partitionKey: { name: 'identifier', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'uuid', type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
     })
 

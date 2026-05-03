@@ -15,7 +15,8 @@ import {
 
 interface AppStackProps extends cdk.StackProps {
   adminKey: sm.ISecret
-  magazineTable: dynamodb.ITable
+  magazinesDailyTable: dynamodb.ITable
+  magazinesPoolTable: dynamodb.ITable
   certificate: acm.ICertificate
   hostedZone: route53.IHostedZone
   domainName: string
@@ -27,7 +28,8 @@ export class AppStack extends cdk.Stack {
     super(scope, id, props)
 
     const lambdaConstruct = new LambdaConstruct(this, 'LambdaConstruct', {
-      table: props.magazineTable,
+      magazinesDailyTable: props.magazinesDailyTable,
+      magazinesPoolTable: props.magazinesPoolTable,
       adminKey: props.adminKey,
       artifactBucket: props.artifactBucket,
     })

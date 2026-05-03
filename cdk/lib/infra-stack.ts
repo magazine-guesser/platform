@@ -20,7 +20,8 @@ interface InfraStackProps extends cdk.StackProps {
 export class InfraStack extends cdk.Stack {
   public readonly regionalCert: acm.Certificate
   public readonly hostedZone: route53.IHostedZone
-  public readonly magazineTable: dynamodb.Table
+  public readonly magazinesDailyTable: dynamodb.Table
+  public readonly magazinesPoolTable: dynamodb.Table
   public readonly adminKey: sm.Secret
   public readonly artifactBucket: s3.Bucket
 
@@ -45,10 +46,17 @@ export class InfraStack extends cdk.Stack {
       },
     })
 
-    this.magazineTable = new dynamodb.Table(this, 'DailySelection', {
+    this.magazinesDailyTable = new dynamodb.Table(this, 'DailySelection', {
       tableName: 'magazines-daily',
       partitionKey: { name: 'date', type: dynamodb.AttributeType.STRING },
       sortKey: { name: 'nr', type: dynamodb.AttributeType.NUMBER },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+    })
+
+    this.magazinesPoolTable = new dynamodb.Table(this, 'MagazinesPool', {
+      tableName: 'magazines-pool',
+      partitionKey: { name: 'identifier', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'uuid', type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
     })
 

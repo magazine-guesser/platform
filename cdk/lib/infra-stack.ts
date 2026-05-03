@@ -21,6 +21,7 @@ export class InfraStack extends cdk.Stack {
   public readonly regionalCert: acm.Certificate
   public readonly hostedZone: route53.IHostedZone
   public readonly magazineTable: dynamodb.Table
+  public readonly magazines-poolTable: dynamodb.Table
   public readonly adminKey: sm.Secret
   public readonly artifactBucket: s3.Bucket
 
@@ -49,6 +50,12 @@ export class InfraStack extends cdk.Stack {
       tableName: 'magazines-daily',
       partitionKey: { name: 'date', type: dynamodb.AttributeType.STRING },
       sortKey: { name: 'nr', type: dynamodb.AttributeType.NUMBER },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+    })
+
+    this.magazines-poolTable = new dynamodb.Table(this, 'magazines-pool', {
+      tableName: 'magazines-pool',
+      partitionKey: { name: 'identifier', type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
     })
 

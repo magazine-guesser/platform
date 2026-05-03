@@ -15,6 +15,7 @@ Persistent infrastructure. Safe to deploy independently.
 - **S3**: frontend hosting bucket (private, OAC access only)
 - **CloudFront**: CDN distribution with HTTPS redirect, custom domain, and SPA fallback.
 - **DynamoDB**: `magazines-daily` table. PK: `date` (STRING), SK: `nr` (NUMBER). On-demand billing.
+- **DynamoDB**: `magazines-pool` table. PK: `identifier` (STRING). On-demand billing.
 - **Secrets Manager**: `admin-key` secret for backend admin auth
 - **ACM (regional)**: wildcard cert for `magazineguessr.com` + `*.magazineguessr.com`. Required for API Gateway custom domains (separate from the us-east-1 cert used by CloudFront). Exported to AppStack.
 - **GitHub OIDC**: IAM roles for CI/CD (CDK deploy, backend deploy, frontend deploy). No static credentials.

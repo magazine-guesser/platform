@@ -7,7 +7,8 @@ import {
 } from 'aws-cdk-lib'
 
 interface LambdaProps {
-  table: dynamodb.ITable
+  magazinesDailyTable: dynamodb.ITable
+  magazinesPoolTable: dynamodb.ITable
   adminKey: sm.ISecret
   artifactBucket: s3.IBucket
 }
@@ -26,11 +27,13 @@ export class LambdaConstruct extends Construct {
       handler: 'lambda.handler',
       code: lambda.Code.fromBucket(props.artifactBucket, 'backend/latest.zip'),
       environment: {
-        TABLE_NAME: 'magazines-daily',
+        DAILY_TABLE_NAME: props.magazinesDailyTable.tableName,
+        POOL_TABLE_NAME: props.magazinesPoolTable.tableName,
       },
     })
 
-    props.table.grantReadData(this.fn)
+    props.magazinesDailyTable.grantReadData(this.fn)
+    props.magazinesPoolTable.grantWriteData(this.fn)
     props.adminKey.grantRead(this.fn)
 
     this.devAlias = new lambda.Alias(this, 'DevAlias', {

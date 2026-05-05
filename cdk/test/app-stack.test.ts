@@ -33,7 +33,12 @@ const buildTemplate = () => {
     hostedZoneId: 'TESTZONEID',
     zoneName: DOMAIN,
   })
-  const mockTable = dynamodb.Table.fromTableName(helperStack, 'MockTable', 'magazines-daily')
+  const mockDailyTable = dynamodb.Table.fromTableName(
+    helperStack,
+    'MockDailyTable',
+    'magazines-daily'
+  )
+  const mockPoolTable = dynamodb.Table.fromTableName(helperStack, 'MockPoolTable', 'magazines-pool')
   const mockSecret = sm.Secret.fromSecretNameV2(helperStack, 'MockSecret', 'admin-key')
   const mockArtifactBucket = s3.Bucket.fromBucketName(
     helperStack,
@@ -46,7 +51,8 @@ const buildTemplate = () => {
     certificate: mockCert,
     hostedZone: mockHostedZone,
     domainName: DOMAIN,
-    magazineTable: mockTable,
+    magazinesDailyTable: mockDailyTable,
+    magazinesPoolTable: mockPoolTable,
     adminKey: mockSecret,
     artifactBucket: mockArtifactBucket,
   })
@@ -72,11 +78,12 @@ describe('AppStack: Lambda', () => {
     })
   })
 
-  test('Lambda function has TABLE_NAME env var set', () => {
+  test('Lambda function has correct table env vars set', () => {
     template.hasResourceProperties('AWS::Lambda::Function', {
       Environment: {
         Variables: Match.objectLike({
-          TABLE_NAME: 'magazines-daily',
+          DAILY_TABLE_NAME: 'magazines-daily',
+          POOL_TABLE_NAME: 'magazines-pool',
         }),
       },
     })

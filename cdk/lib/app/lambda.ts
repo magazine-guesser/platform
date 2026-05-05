@@ -27,8 +27,8 @@ export class LambdaConstruct extends Construct {
       handler: 'lambda.handler',
       code: lambda.Code.fromBucket(props.artifactBucket, 'backend/latest.zip'),
       environment: {
-        DAILY_TABLE_NAME: 'magazines-daily',
-        POOL_TABLE_NAME: 'magazines-pool',
+        DAILY_TABLE_NAME: props.magazinesDailyTable.tableName,
+        POOL_TABLE_NAME: props.magazinesPoolTable.tableName,
       },
     })
 

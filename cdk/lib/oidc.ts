@@ -1,15 +1,11 @@
 import { Construct } from 'constructs'
 import { aws_iam as iam } from 'aws-cdk-lib'
-import { Bucket } from 'aws-cdk-lib/aws-s3'
-import { Distribution } from 'aws-cdk-lib/aws-cloudfront'
 
 interface GithubOidcProps {
   orgName: string
   cdkRepoName: string
   backendRepoName: string
-  frontendBucket: Bucket
   frontendRepoName: string
-  distribution: Distribution
 }
 
 export class GithubOidc extends Construct {
@@ -34,6 +30,7 @@ export class GithubOidc extends Construct {
       props.orgName,
       props.backendRepoName
     )
+
     this.backendRole.addManagedPolicy(
       iam.ManagedPolicy.fromAwsManagedPolicyName('AWSLambda_FullAccess')
     )
@@ -44,8 +41,6 @@ export class GithubOidc extends Construct {
       props.orgName,
       props.frontendRepoName
     )
-    props.frontendBucket.grantReadWrite(this.frontendRole)
-    props.distribution.grantCreateInvalidation(this.frontendRole)
   }
 
   private createRole(

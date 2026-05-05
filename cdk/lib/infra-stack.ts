@@ -83,11 +83,11 @@ export class InfraStack extends cdk.Stack {
       orgName: 'magazine-guesser',
       cdkRepoName: 'platform',
       backendRepoName: 'backend',
-      frontendBucket,
       frontendRepoName: 'frontend',
-      distribution: cfConst.distribution,
     })
 
+    frontendBucket.grantReadWrite(oidc.frontendRole)
+    cfConst.distribution.grantCreateInvalidation(oidc.frontendRole)
     this.artifactBucket.grantReadWrite(oidc.backendRole)
 
     Aspects.of(this).add(new DestroyAll())

@@ -33,7 +33,11 @@ const buildTemplate = () => {
     hostedZoneId: 'TESTZONEID',
     zoneName: DOMAIN,
   })
-  const mockDailyTable = dynamodb.Table.fromTableName(helperStack, 'MockDailyTable', 'magazines-daily')
+  const mockDailyTable = dynamodb.Table.fromTableName(
+    helperStack,
+    'MockDailyTable',
+    'magazines-daily'
+  )
   const mockPoolTable = dynamodb.Table.fromTableName(helperStack, 'MockPoolTable', 'magazines-pool')
   const mockSecret = sm.Secret.fromSecretNameV2(helperStack, 'MockSecret', 'admin-key')
   const mockArtifactBucket = s3.Bucket.fromBucketName(

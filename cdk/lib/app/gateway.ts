@@ -60,6 +60,23 @@ export class GatewayConstruct extends Construct {
       throttle: options.throttle,
     })
 
+    api.addRoutes({
+      path: '/admin/{proxy+}',
+      methods: [apigwv2.HttpMethod.ANY],
+      integration: new integrations.HttpLambdaIntegration(
+        `${options.id}AdminIntegration`,
+        options.alias
+      ),
+    })
+
+    const cfnStage = stage.node.defaultChild as apigwv2.CfnStage
+    cfnStage.routeSettings = {
+      'ANY /admin/{proxy+}': {
+        throttlingRateLimit: 2,
+        throttlingBurstLimit: 5,
+      },
+    }
+
     const domain = new apigwv2.DomainName(scope, `${options.id}Domain`, {
       domainName: options.domainName,
       certificate: options.certificate,

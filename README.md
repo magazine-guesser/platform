@@ -18,7 +18,8 @@ Persistent infrastructure. Safe to deploy independently.
 - **DynamoDB**: `magazines-pool` table. PK: `identifier` (STRING). On-demand billing.
 - **Secrets Manager**: `admin-key` secret for backend admin auth
 - **ACM (regional)**: wildcard cert for `magazineguessr.com` + `*.magazineguessr.com`. Required for API Gateway custom domains (separate from the us-east-1 cert used by CloudFront). Exported to AppStack.
-- **GitHub OIDC**: IAM roles for CI/CD (CDK deploy, backend deploy, frontend deploy). No static credentials.
+- **ECR**: `magazineguessr-workers` repository for worker container images. Lifecycle rules per worker tag prefix (keep last 3), untagged images removed after 1 day.
+- **GitHub OIDC**: IAM roles for CI/CD (CDK deploy, backend deploy, frontend deploy, workers deploy). No static credentials.
 - **Route 53**: A record for `magazineguessr.com` → CloudFront, hosted zone exported to AppStack
 
 ### AppStack
@@ -45,9 +46,10 @@ cdk/
 │   │   ├── lambda.ts    # LambdaConstruct: function + aliases
 │   │   └── gateway.ts   # GatewayConstruct: HTTP APIs + custom domains + mappings
 │   ├── infra/
-│   │   └── cloudfront.ts # CloudFrontConstruct
-│   ├── oidc.ts          # GitHub OIDC roles
-│   └── aspects.ts       # DestroyAll aspect
+│   │   ├── cloudfront.ts # CloudFrontConstruct
+│   │   ├── oidc.ts       # GitHub OIDC roles
+│   │   └── workersEcr.ts # WorkersEcrConstruct: ECR repo + lifecycle rules
+│   └── aspects.ts        # DestroyAll aspect
 └── test/
     ├── infra-stack.test.ts
     └── app-stack.test.ts

@@ -91,7 +91,7 @@ export class InfraStack extends cdk.Stack {
       tagPrefixes: ['scheduler'],
     })
 
-    const oidc = new GithubOidc(this, 'GithubOicd', {
+    const oidc = new GithubOidc(this, 'GithubOidc', {
       orgName: 'magazine-guesser',
       cdkRepoName: 'platform',
       backendRepoName: 'backend',

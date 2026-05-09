@@ -62,6 +62,12 @@ export class InfraStack extends cdk.Stack {
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
     })
 
+    this.magazinesPoolTable.addGlobalSecondaryIndex({
+      indexName: 'status-index',
+      partitionKey: { name: 'status', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'uuid', type: dynamodb.AttributeType.STRING },
+    })
+
     const frontendBucket = new s3.Bucket(this, 'FrontendBucket', {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,

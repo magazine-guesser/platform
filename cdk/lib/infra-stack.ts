@@ -1,14 +1,16 @@
 import * as cdk from 'aws-cdk-lib/core'
 import { Construct } from 'constructs'
-import { GithubOidc } from './oidc'
-import { DestroyAll } from './aspects'
+import { GithubOidc } from './infra/oidc'
 import { CloudFrontConstruct } from './infra/cloudfront'
+import { WorkersEcrConstruct } from './infra/workersEcr'
+import { DestroyAll } from './aspects'
 import {
   aws_s3 as s3,
   aws_secretsmanager as sm,
   aws_dynamodb as dynamodb,
   aws_route53 as route53,
   aws_certificatemanager as acm,
+  aws_iam as iam,
   Aspects,
 } from 'aws-cdk-lib'
 
@@ -60,6 +62,12 @@ export class InfraStack extends cdk.Stack {
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
     })
 
+    this.magazinesPoolTable.addGlobalSecondaryIndex({
+      indexName: 'status-index',
+      partitionKey: { name: 'status', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'uuid', type: dynamodb.AttributeType.STRING },
+    })
+
     const frontendBucket = new s3.Bucket(this, 'FrontendBucket', {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
@@ -79,16 +87,34 @@ export class InfraStack extends cdk.Stack {
       certificate: props.certificate,
     })
 
-    const oidc = new GithubOidc(this, 'GithubOicd', {
+    const workersEcrConst = new WorkersEcrConstruct(this, 'WorkersEcr', {
+      tagPrefixes: ['scheduler'],
+    })
+
+    const oidc = new GithubOidc(this, 'GithubOidc', {
       orgName: 'magazine-guesser',
       cdkRepoName: 'platform',
       backendRepoName: 'backend',
       frontendRepoName: 'frontend',
+      workersRepoName: 'workers',
     })
 
     frontendBucket.grantReadWrite(oidc.frontendRole)
     cfConst.distribution.grantCreateInvalidation(oidc.frontendRole)
+    workersEcrConst.repo.grantPush(oidc.workersRole)
     this.artifactBucket.grantReadWrite(oidc.backendRole)
+    oidc.backendRole.addToPrincipalPolicy(
+      new iam.PolicyStatement({
+        actions: ['lambda:UpdateFunctionCode'],
+        resources: ['*'],
+      })
+    )
+    oidc.workersRole.addToPrincipalPolicy(
+      new iam.PolicyStatement({
+        actions: ['lambda:UpdateFunctionCode'],
+        resources: ['*'],
+      })
+    )
 
     Aspects.of(this).add(new DestroyAll())
   }

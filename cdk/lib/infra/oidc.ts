@@ -27,16 +27,21 @@ export class GithubOidc extends Construct {
     })
     this.orgName = props.orgName
 
-    this.cdkRole = this.createRole('CdkRole', props.cdkRepoName)
-    this.frontendRole = this.createRole('FrontendRole', props.frontendRepoName)
-    this.workersRole = this.createRole('WorkersRole', props.workersRepoName)
-    this.backendRole = this.createRole('BackendRole', props.backendRepoName)
+    this.cdkRole = this.createRole('CdkRole', 'mg-github-cdk', props.cdkRepoName)
+    this.frontendRole = this.createRole(
+      'FrontendRole',
+      'mg-github-frontend',
+      props.frontendRepoName
+    )
+    this.workersRole = this.createRole('WorkersRole', 'mg-github-workers', props.workersRepoName)
+    this.backendRole = this.createRole('BackendRole', 'mg-github-backend', props.backendRepoName)
 
     this.cdkRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AdministratorAccess'))
   }
 
-  private createRole(id: string, repoName: string) {
+  private createRole(id: string, roleName: string, repoName: string) {
     return new iam.Role(this, id, {
+      roleName,
       assumedBy: new iam.WebIdentityPrincipal(this.provider.openIdConnectProviderArn, {
         StringLike: {
           'token.actions.githubusercontent.com:sub': `repo:${this.orgName}/${repoName}:*`,

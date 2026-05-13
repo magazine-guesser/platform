@@ -11,6 +11,7 @@ import {
   aws_route53 as route53,
   aws_certificatemanager as acm,
   aws_iam as iam,
+  aws_ecr as ecr,
   Aspects,
 } from 'aws-cdk-lib'
 
@@ -26,6 +27,7 @@ export class InfraStack extends cdk.Stack {
   public readonly magazinesPoolTable: dynamodb.Table
   public readonly adminKey: sm.Secret
   public readonly artifactBucket: s3.Bucket
+  public readonly imageRepo: ecr.IRepository
 
   constructor(scope: Construct, id: string, props: InfraStackProps) {
     super(scope, id, props)
@@ -90,6 +92,7 @@ export class InfraStack extends cdk.Stack {
     const workersEcrConst = new WorkersEcrConstruct(this, 'WorkersEcr', {
       tagPrefixes: ['scheduler'],
     })
+    this.imageRepo = workersEcrConst.repo
 
     const oidc = new GithubOidc(this, 'GithubOidc', {
       orgName: 'magazine-guesser',

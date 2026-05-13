@@ -1,6 +1,7 @@
 import * as cdk from 'aws-cdk-lib/core'
 import { Construct } from 'constructs'
 import { DestroyAll } from './aspects'
+import { WorkerLambdas } from './app/workerLambdas'
 import { LambdaConstruct } from './app/lambda'
 import { GatewayConstruct } from './app/gateway'
 import {
@@ -10,6 +11,7 @@ import {
   aws_route53_targets as targets,
   aws_dynamodb as dynamodb,
   aws_s3 as s3,
+  aws_ecr as ecr,
   Aspects,
 } from 'aws-cdk-lib'
 
@@ -21,6 +23,7 @@ interface AppStackProps extends cdk.StackProps {
   hostedZone: route53.IHostedZone
   domainName: string
   artifactBucket: s3.IBucket
+  imageRepo: ecr.IRepository
 }
 
 export class AppStack extends cdk.Stack {
@@ -32,6 +35,13 @@ export class AppStack extends cdk.Stack {
       magazinesPoolTable: props.magazinesPoolTable,
       adminKey: props.adminKey,
       artifactBucket: props.artifactBucket,
+    })
+
+    new WorkerLambdas(this, 'WorkerLambdas', {
+      magazinesDailyTable: props.magazinesDailyTable,
+      magazinesPoolTable: props.magazinesPoolTable,
+      imageRepo: props.imageRepo,
+      workerNames: ['scheduler'],
     })
 
     const gatewayConstruct = new GatewayConstruct(this, 'GatewayConstruct', {

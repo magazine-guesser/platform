@@ -103,19 +103,23 @@ export class InfraStack extends cdk.Stack {
     cfConst.distribution.grantCreateInvalidation(oidc.frontendRole)
     workersEcrConst.repo.grantPush(oidc.workersRole)
     this.artifactBucket.grantReadWrite(oidc.backendRole)
-    oidc.backendRole.addToPrincipalPolicy(
-      new iam.PolicyStatement({
-        actions: ['lambda:UpdateFunctionCode'],
-        resources: ['*'],
-      })
-    )
-    oidc.workersRole.addToPrincipalPolicy(
-      new iam.PolicyStatement({
-        actions: ['lambda:UpdateFunctionCode'],
-        resources: ['*'],
-      })
-    )
+    grantLambdaDeploy(oidc.backendRole)
+    grantLambdaDeploy(oidc.workersRole)
 
     Aspects.of(this).add(new DestroyAll())
   }
+}
+
+function grantLambdaDeploy(role: iam.Role) {
+  role.addToPrincipalPolicy(
+    new iam.PolicyStatement({
+      actions: [
+        'lambda:UpdateFunctionCode',
+        'lambda:GetFunctionConfiguration',
+        'lambda:PublishVersion',
+        'lambda:UpdateAlias',
+      ],
+      resources: ['*'],
+    })
+  )
 }

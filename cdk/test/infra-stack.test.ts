@@ -191,12 +191,17 @@ describe('InfraStack: OIDC backend role permissions', () => {
     })
   })
 
-  test('backend role has lambda:UpdateFunctionCode permission', () => {
+  test('backend role has lambda deploy permissions', () => {
     template.hasResourceProperties('AWS::IAM::Policy', {
       PolicyDocument: {
         Statement: Match.arrayWith([
           Match.objectLike({
-            Action: 'lambda:UpdateFunctionCode',
+            Action: Match.arrayWith([
+              'lambda:UpdateFunctionCode',
+              'lambda:GetFunctionConfiguration',
+              'lambda:PublishVersion',
+              'lambda:UpdateAlias',
+            ]),
             Effect: 'Allow',
           }),
         ]),
@@ -225,12 +230,17 @@ describe('InfraStack: OIDC workers role permissions', () => {
     })
   })
 
-  test('workers role has lambda:UpdateFunctionCode permission', () => {
+  test('workers role has lambda deploy permissions', () => {
     template.hasResourceProperties('AWS::IAM::Policy', {
       PolicyDocument: {
         Statement: Match.arrayWith([
           Match.objectLike({
-            Action: 'lambda:UpdateFunctionCode',
+            Action: Match.arrayWith([
+              'lambda:UpdateFunctionCode',
+              'lambda:GetFunctionConfiguration',
+              'lambda:PublishVersion',
+              'lambda:UpdateAlias',
+            ]),
             Effect: 'Allow',
           }),
         ]),

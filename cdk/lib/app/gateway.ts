@@ -60,7 +60,7 @@ export class GatewayConstruct extends Construct {
       throttle: options.throttle,
     })
 
-    api.addRoutes({
+    const adminRoutes = api.addRoutes({
       path: '/admin/{proxy+}',
       methods: [apigwv2.HttpMethod.ANY],
       integration: new integrations.HttpLambdaIntegration(
@@ -72,10 +72,12 @@ export class GatewayConstruct extends Construct {
     const cfnStage = stage.node.defaultChild as apigwv2.CfnStage
     cfnStage.routeSettings = {
       'ANY /admin/{proxy+}': {
-        throttlingRateLimit: 2,
-        throttlingBurstLimit: 5,
+        ThrottlingRateLimit: 2,
+        ThrottlingBurstLimit: 5,
       },
     }
+
+    adminRoutes.forEach((route) => cfnStage.node.addDependency(route))
 
     const domain = new apigwv2.DomainName(scope, `${options.id}Domain`, {
       domainName: options.domainName,

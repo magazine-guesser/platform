@@ -37,4 +37,5 @@ new AppStack(app, 'AppStack', {
   certificate: infrastack.regionalCert,
   artifactBucket: infrastack.artifactBucket,
   crossRegionReferences: true,
+  imageRepo: infrastack.imageRepo,
 })

@@ -29,6 +29,7 @@ const buildTemplate = () => {
     env: { account: ACCOUNT, region: REGION },
     certificate: mockCert,
     domainName: DOMAIN,
+    workerNames: ['scheduler', 'recycler'],
   })
 
   return Template.fromStack(stack)

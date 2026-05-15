@@ -18,6 +18,7 @@ import {
 interface InfraStackProps extends cdk.StackProps {
   certificate: acm.ICertificate
   domainName: string
+  workerNames: string[]
 }
 
 export class InfraStack extends cdk.Stack {
@@ -62,6 +63,7 @@ export class InfraStack extends cdk.Stack {
       partitionKey: { name: 'identifier', type: dynamodb.AttributeType.STRING },
       sortKey: { name: 'uuid', type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      timeToLiveAttribute: 'ttl',
     })
 
     this.magazinesPoolTable.addGlobalSecondaryIndex({
@@ -90,7 +92,7 @@ export class InfraStack extends cdk.Stack {
     })
 
     const workersEcrConst = new WorkersEcrConstruct(this, 'WorkersEcr', {
-      tagPrefixes: ['scheduler'],
+      tagPrefixes: props.workerNames,
     })
     this.imageRepo = workersEcrConst.repo
 

@@ -62,6 +62,7 @@ const buildTemplate = () => {
     adminKey: mockSecret,
     artifactBucket: mockArtifactBucket,
     imageRepo: mockImageRepo,
+    workerNames: ['scheduler', 'recycler'],
   })
 
   return Template.fromStack(stack)

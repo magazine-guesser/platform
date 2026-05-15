@@ -24,6 +24,7 @@ interface AppStackProps extends cdk.StackProps {
   domainName: string
   artifactBucket: s3.IBucket
   imageRepo: ecr.IRepository
+  workerNames: string[]
 }
 
 export class AppStack extends cdk.Stack {
@@ -41,7 +42,7 @@ export class AppStack extends cdk.Stack {
       magazinesDailyTable: props.magazinesDailyTable,
       magazinesPoolTable: props.magazinesPoolTable,
       imageRepo: props.imageRepo,
-      workerNames: ['scheduler'],
+      workerNames: props.workerNames,
     })
 
     const gatewayConstruct = new GatewayConstruct(this, 'GatewayConstruct', {

@@ -6,6 +6,7 @@ import { CertStack } from '../lib/cert-stack'
 
 const app = new cdk.App()
 const domainName = 'magazineguessr.com'
+const workerNames = ['scheduler', 'recycler']
 
 const env = {
   account: process.env.CDK_DEFAULT_ACCOUNT,
@@ -25,6 +26,7 @@ const infrastack = new InfraStack(app, 'InfraStack', {
   domainName,
   certificate: certstack.certificate,
   crossRegionReferences: true,
+  workerNames,
 })
 
 new AppStack(app, 'AppStack', {
@@ -38,4 +40,5 @@ new AppStack(app, 'AppStack', {
   artifactBucket: infrastack.artifactBucket,
   crossRegionReferences: true,
   imageRepo: infrastack.imageRepo,
+  workerNames,
 })

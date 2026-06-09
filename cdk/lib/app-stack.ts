@@ -10,6 +10,8 @@ import {
   aws_route53 as route53,
   aws_route53_targets as targets,
   aws_dynamodb as dynamodb,
+  aws_events as events,
+  aws_events_targets as eventTargets,
   aws_s3 as s3,
   aws_ecr as ecr,
   Aspects,
@@ -37,12 +39,17 @@ export class AppStack extends cdk.Stack {
       artifactBucket: props.artifactBucket,
     })
 
-    new WorkerLambdas(this, 'WorkerLambdas', {
+    const workers = new WorkerLambdas(this, 'WorkerLambdas', {
       magazinesDailyTable: props.magazinesDailyTable,
       magazinesPoolTable: props.magazinesPoolTable,
       imageRepo: props.imageRepo,
       workerNames: ['scheduler'],
     })
+
+    const schedulerRule = new events.Rule(this, 'SchedulerRule', {
+      schedule: events.Schedule.cron({ hour: '0', minute: '0' }),
+    })
+    schedulerRule.addTarget(new eventTargets.LambdaFunction(workers.scheduler))
 
     const gatewayConstruct = new GatewayConstruct(this, 'GatewayConstruct', {
       devAlias: lambdaConstruct.devAlias,

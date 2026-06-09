@@ -29,6 +29,8 @@ Lambda + API Gateway. Depends on resources created by InfraStack.
 - **Aliases**: `dev` (latest version) and `prod` (current version) on the same function
 - **API Gateway**: Two HTTP APIs: one per alias, each with a custom domain mapping
 - **Route 53**: `api.magazineguessr.com` -> prod, `api.dev.magazineguessr.com` -> dev
+- **Worker Lambda**: `magazineguessr-scheduler`, container image from ECR. Selects magazines from the pool and schedules the next daily challenge.
+- **EventBridge**: Nightly rule (00:00 UTC) triggering the scheduler lambda.
 
 ---
 
@@ -43,8 +45,9 @@ cdk/
 │   ├── infra-stack.ts   # S3, CloudFront, DynamoDB, Secrets Manager, OIDC, Route 53
 │   ├── app-stack.ts     # Lambda + API Gateway + Route 53
 │   ├── app/
-│   │   ├── lambda.ts    # LambdaConstruct: function + aliases
-│   │   └── gateway.ts   # GatewayConstruct: HTTP APIs + custom domains + mappings
+│   │   ├── lambda.ts        # LambdaConstruct: function + aliases
+│   │   ├── gateway.ts       # GatewayConstruct: HTTP APIs + custom domains + mappings
+│   │   └── workerLambdas.ts # WorkerLambdas: worker container lambdas
 │   ├── infra/
 │   │   ├── cloudfront.ts # CloudFrontConstruct
 │   │   ├── oidc.ts       # GitHub OIDC roles

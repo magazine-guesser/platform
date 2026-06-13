@@ -170,18 +170,6 @@ describe('InfraStack: OIDC backend role permissions', () => {
     template = buildTemplate()
   })
 
-  test('backend role has Lambda full access managed policy', () => {
-    template.hasResourceProperties('AWS::IAM::Role', {
-      ManagedPolicyArns: Match.arrayWith([
-        Match.objectLike({
-          'Fn::Join': Match.arrayWith([
-            Match.arrayWith([Match.stringLikeRegexp('AWSLambda_FullAccess')]),
-          ]),
-        }),
-      ]),
-    })
-  })
-
   test('backend role has read/write access to the artifact bucket', () => {
     template.hasResourceProperties('AWS::IAM::Policy', {
       PolicyDocument: {
@@ -200,6 +188,77 @@ describe('InfraStack: OIDC backend role permissions', () => {
           }),
         ]),
       },
+    })
+  })
+
+  test('backend role has lambda deploy permissions', () => {
+    template.hasResourceProperties('AWS::IAM::Policy', {
+      PolicyDocument: {
+        Statement: Match.arrayWith([
+          Match.objectLike({
+            Action: Match.arrayWith([
+              'lambda:UpdateFunctionCode',
+              'lambda:GetFunctionConfiguration',
+              'lambda:PublishVersion',
+              'lambda:UpdateAlias',
+            ]),
+            Effect: 'Allow',
+          }),
+        ]),
+      },
+      Roles: Match.arrayWith([Match.objectLike({ Ref: Match.stringLikeRegexp('BackendRole') })]),
+    })
+  })
+})
+
+describe('InfraStack: OIDC workers role permissions', () => {
+  let template: Template
+  beforeEach(() => {
+    template = buildTemplate()
+  })
+
+  test('workers role can push to ECR', () => {
+    template.hasResourceProperties('AWS::IAM::Policy', {
+      PolicyDocument: {
+        Statement: Match.arrayWith([
+          Match.objectLike({
+            Action: Match.arrayWith(['ecr:CompleteLayerUpload', 'ecr:PutImage']),
+            Effect: 'Allow',
+          }),
+        ]),
+      },
+    })
+  })
+
+  test('workers role has lambda deploy permissions', () => {
+    template.hasResourceProperties('AWS::IAM::Policy', {
+      PolicyDocument: {
+        Statement: Match.arrayWith([
+          Match.objectLike({
+            Action: Match.arrayWith([
+              'lambda:UpdateFunctionCode',
+              'lambda:GetFunctionConfiguration',
+              'lambda:PublishVersion',
+              'lambda:UpdateAlias',
+            ]),
+            Effect: 'Allow',
+          }),
+        ]),
+      },
+      Roles: Match.arrayWith([Match.objectLike({ Ref: Match.stringLikeRegexp('WorkersRole') })]),
+    })
+  })
+})
+
+describe('InfraStack: ECR workers repo', () => {
+  let template: Template
+  beforeEach(() => {
+    template = buildTemplate()
+  })
+
+  test('ECR repository is created with correct name', () => {
+    template.hasResourceProperties('AWS::ECR::Repository', {
+      RepositoryName: 'magazineguessr-workers',
     })
   })
 })

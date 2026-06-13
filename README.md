@@ -18,7 +18,8 @@ Persistent infrastructure. Safe to deploy independently.
 - **DynamoDB**: `magazines-pool` table. PK: `identifier` (STRING). On-demand billing.
 - **Secrets Manager**: `admin-key` secret for backend admin auth
 - **ACM (regional)**: wildcard cert for `magazineguessr.com` + `*.magazineguessr.com`. Required for API Gateway custom domains (separate from the us-east-1 cert used by CloudFront). Exported to AppStack.
-- **GitHub OIDC**: IAM roles for CI/CD (CDK deploy, backend deploy, frontend deploy). No static credentials.
+- **ECR**: `magazineguessr-workers` repository for worker container images. Lifecycle rules per worker tag prefix (keep last 3), untagged images removed after 1 day.
+- **GitHub OIDC**: IAM roles for CI/CD (CDK deploy, backend deploy, frontend deploy, workers deploy). No static credentials.
 - **Route 53**: A record for `magazineguessr.com` → CloudFront, hosted zone exported to AppStack
 
 ### AppStack
@@ -28,6 +29,8 @@ Lambda + API Gateway. Depends on resources created by InfraStack.
 - **Aliases**: `dev` (latest version) and `prod` (current version) on the same function
 - **API Gateway**: Two HTTP APIs: one per alias, each with a custom domain mapping
 - **Route 53**: `api.magazineguessr.com` -> prod, `api.dev.magazineguessr.com` -> dev
+- **Worker Lambda**: `magazineguessr-scheduler`, container image from ECR. Selects magazines from the pool and schedules the next daily challenge.
+- **EventBridge**: Nightly rule (00:00 UTC) triggering the scheduler lambda.
 
 ---
 
@@ -42,12 +45,14 @@ cdk/
 │   ├── infra-stack.ts   # S3, CloudFront, DynamoDB, Secrets Manager, OIDC, Route 53
 │   ├── app-stack.ts     # Lambda + API Gateway + Route 53
 │   ├── app/
-│   │   ├── lambda.ts    # LambdaConstruct: function + aliases
-│   │   └── gateway.ts   # GatewayConstruct: HTTP APIs + custom domains + mappings
+│   │   ├── lambda.ts        # LambdaConstruct: function + aliases
+│   │   ├── gateway.ts       # GatewayConstruct: HTTP APIs + custom domains + mappings
+│   │   └── workerLambdas.ts # WorkerLambdas: worker container lambdas
 │   ├── infra/
-│   │   └── cloudfront.ts # CloudFrontConstruct
-│   ├── oidc.ts          # GitHub OIDC roles
-│   └── aspects.ts       # DestroyAll aspect
+│   │   ├── cloudfront.ts # CloudFrontConstruct
+│   │   ├── oidc.ts       # GitHub OIDC roles
+│   │   └── workersEcr.ts # WorkersEcrConstruct: ECR repo + lifecycle rules
+│   └── aspects.ts        # DestroyAll aspect
 └── test/
     ├── infra-stack.test.ts
     └── app-stack.test.ts

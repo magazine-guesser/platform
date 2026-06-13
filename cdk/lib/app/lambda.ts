@@ -33,7 +33,7 @@ export class LambdaConstruct extends Construct {
     })
 
     props.magazinesDailyTable.grantReadData(this.fn)
-    props.magazinesPoolTable.grantWriteData(this.fn)
+    props.magazinesPoolTable.grantReadWriteData(this.fn)
     props.adminKey.grantRead(this.fn)
 
     this.devAlias = new lambda.Alias(this, 'DevAlias', {

@@ -7,6 +7,7 @@ import {
   aws_dynamodb as dynamodb,
   aws_secretsmanager as sm,
   aws_s3 as s3,
+  aws_ecr as ecr,
 } from 'aws-cdk-lib'
 
 const ACCOUNT = '123456789012'
@@ -45,6 +46,11 @@ const buildTemplate = () => {
     'MockArtifactBucket',
     'magazineguessr-artifacts'
   )
+  const mockImageRepo = ecr.Repository.fromRepositoryName(
+    helperStack,
+    'MockImageRepo',
+    'magazineguessr-workers'
+  )
 
   const stack = new AppStack(app, 'TestAppStack', {
     env: { account: ACCOUNT, region: REGION },
@@ -55,6 +61,7 @@ const buildTemplate = () => {
     magazinesPoolTable: mockPoolTable,
     adminKey: mockSecret,
     artifactBucket: mockArtifactBucket,
+    imageRepo: mockImageRepo,
   })
 
   return Template.fromStack(stack)
